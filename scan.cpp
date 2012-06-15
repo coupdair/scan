@@ -1,6 +1,6 @@
-//scan
+//stepper
 /*-----------------------------------------------------------------------
-  File        : scan.cpp
+  File        : stepper.cpp
   Description : stepper motor for translation displacement program of the Laboratory of Mechanics in Lille (LML)
   Authors     : Sebastien COUDERT
 -----------------------------------------------------------------------*/
@@ -82,14 +82,15 @@ using namespace std;     // added by Dahi
 #include <sstream>
 ///////////////////////////////////////////  
 //CImg Library
-#include "../CImg/CImg.h"
+///data
+#include "data4scan.h"
 //stepper library
 #include "../stepper/stepper.h"
 //grab library
-#include "../grab/grab_factory.h"
+#include "../grab/grab.h"
 
-int record_images(Cgrab &grab,cimg_library::CImg<int> &image,const std::string &ImagePath, int ImageNumber,int i,int j,int k, int x0, int y0, int x1, int y1)
 
+int record_images(Cgrab &grab,cimg_library::CImg<int> &image,const std::string &ImagePath, int ImageNumber,int i,int j,int k)
 {
 std::string file;//file.reserve(ImagePath.size()+64);file[0]='\0';
   cimg_library::CImg<int> data(ImageNumber);   //added by Dahi
@@ -100,20 +101,12 @@ std::string file;//file.reserve(ImagePath.size()+64);file[0]='\0';
     {//image file name
 std::cerr<<"ImagePath=\""<<ImagePath<<"\"\n"<<std::flush;
     char fileAsCA[512];
-    std::sprintf((char*)fileAsCA/*.c_str()*/,ImagePath.c_str(),i,j,k,l);//e.g. ImagePath="./img_x%02d_y%02d_i%03d.jpg"
+    std::sprintf((char*)fileAsCA/*.c_str()*/,ImagePath.c_str(),i,j,l);//e.g. ImagePath="./img_x%02d_y%02d_i%03d.jpg"
     file=fileAsCA;
     }//image file name
 std::cerr<<"file=\""<<file<<"\"\n"<<std::flush;
     if(!grab.grab(image,file)) return 1;
-image.print("recorded image");
-//image.display("recorded image");
-///cropping
-   image.crop(x0,y0,x1,y1);
-
-  image.save(file.c_str());
-
 ////////////////////////////
-
    data(l)=l;                                   // added by Dahi
    cout << data(l) << " number of images " << endl; // added by Dahi
    
@@ -134,29 +127,34 @@ usage: ./stepper -h -I\n \
        ./stepper -nx 10 -sx 1 -vx 1000 --device-type uControlXYZ\n \
 version: "+std::string(VERSION)+"\n compilation date: " \
             ).c_str());//cimg_usage
+  ///information and help
+  const bool show_h   =cimg_option("-h",    false,NULL);//-h hidden option
+        bool show_help=cimg_option("--help",show_h,"help (or -h option)");show_help=show_h|show_help;//same --help or -h option
+  bool show_info=cimg_option("-I",false,NULL);//-I hidden option
+  if( cimg_option("--info",show_info,"show compilation options (or -I option)") ) {show_info=true;cimg_library::cimg::info();}//same --info or -I option
 ////////////////////////added by Dahi////////////////////// start//////
  ///device camera
-  const std::string CameraDeviceType=cimg_option("--grab-device-type","grab_WGet","type of grab device (e.g. ArduinoTTL or grab_WGet or Elphel_OpenCV or Elphel_rtsp or grab_image_file).");
-  const std::string CameraDevicePath=cimg_option("--grab-device-path","192.168.0.9","path of grab device.");
+//  const std::string DeviceType=cimg_option("--device-type","Elphel","type of grab device (e.g. ArduinoTTL or Elphel_wget or Elphel_OpenCV or Elphel_rtsp).");
+  const std::string CameraDevicePath=cimg_option("--device-path","192.168.0.9","path of grab device.");
   ///image
   const int ImageNumber=cimg_option("-n",10,"number of images to acquire.");
-  const std::string ImagePath=cimg_option("-o","./image_x%02d_y%02d_z%02d_i%03d.jpg","path for image(s).");
+  const std::string ImagePath=cimg_option("-o","./image_x%02d_y%02d_i%03d.jpg","path for image(s).");
   ///////const int         // this added by Dahi to see if the image name is changed or not
+  ///stop if help requested
+  if(show_help) {/*print_help(std::cerr);*/return 0;}
 //grab device object
-  Cgrab_factory grab_factory;
-  Cgrab *pGrab=grab_factory.create(CameraDeviceType);
+  Cgrab grab;
 //open
-  if(!pGrab->open(CameraDevicePath)) return 1;
+  if(!grab.open(CameraDevicePath/*,DeviceType*/)) return 1;
 //get
   cimg_library::CImg<int> image;
 ////////////////////////end of camera device/////////////////////////////////
 
 ///////////////////////////start stepper device/////////////////////////////
   ///device
-  const std::string StepperDeviceType=cimg_option("--stepper-device-type","uControlXYZ","Type of stepper device");
-  const std::string StepperDevicePath=cimg_option("--stepper-device-path","/dev/ttyUSB0","Path of stepper device");
-  const std::string ReaderDevicePath=cimg_option("--reader-device-path","/dev/ttyUSB1","Path of reader device");
-  const std::string StepperDeviceSerialType=cimg_option("--stepper-serial-type","serial_system","Type of serial device for stepper (i.e. serial_termios or serial_system)");
+  const std::string DeviceType=cimg_option("--device-type","uControlXYZ","Type of stepper device");
+  const std::string StepperDevicePath=cimg_option("--device-path","/dev/ttyUSB0","Path of stepper device");
+  const std::string SerialType=cimg_option("--serial-type","serial_system","Type of serial device for stepper (i.e. serial_termios or serial_system)");
   ///displacement
   cimg_library::CImg<int> step(3);step.fill(0);
   {
@@ -189,39 +187,21 @@ const int step_z=cimg_option("-sz",1,"displacement step along Z axis.");
   }
   ///wait time between steps
   const int wait_time=cimg_option("--wait-time",1000,"wait time between steps in ms.");
-  ///information and help
-  const bool show_h   =cimg_option("-h",    false,NULL);//-h hidden option
-        bool show_help=cimg_option("--help",show_h,"help (or -h option)");show_help=show_h|show_help;//same --help or -h option
-  bool show_info=cimg_option("-I",false,NULL);//-I hidden option
-  if( cimg_option("--info",show_info,"show compilation options (or -I option)") ) {show_info=true;cimg_library::cimg::info();}//same --info or -I option
   ///stop if help requested
   if(show_help) {/*print_help(std::cerr);*/return 0;}
 //stepper device object
   Cstepper stepper;
 // OPEN 
-  if(!stepper.open(StepperDevicePath,StepperDeviceSerialType,ReaderDevicePath,StepperDeviceSerialType)) return 1;
+  if(!stepper.open(StepperDevicePath,SerialType)) return 1;
 // MOVE 
   std::cerr << "displacement along (X,Y,Z)=("<<number(0)*step(0)<<","<<0<<","<<0<<") steps at (vX,vY,vZ)=("<<velocity(0)<<","<<0<<","<<0<<") step(s) per second speed.\n"<<std::flush;
 /////////////////////////////////////////////////////////////
-//get size of image and maximum position
-  pGrab->grab(image,"temp.jpg");
-  image.channel(0);//set to grey level, only
-  cimg_library::CImg<float> stat=image.get_stats();
-  const int xmax=stat[8],ymax=stat[9];
-  const int margin=32;//pixel
-  const int x0=xmax-margin;//pixel
-  const int y0=ymax-margin;//pixel
-  const int x1=xmax+margin;//pixel
-  const int y1=ymax+margin;//pixel
-//mechanical jitter
-  const int mj =10;//um
+
+ const int mj = 10;
   cimg_library::CImg<int> map(number(0),number(1),number(2));   //added by Dahi
 map.fill(0);//not_satisfied
-
 /////////////////////////////////////////////////////////
 cimg_library::CImg<int> stepz(3);stepz.fill(0);stepz(2)=step(2);//e.g. (0,0,10) added stepz
-
-/////cimg_library::cimg-forz(map,k);
 
 for(int k=0;k<number(2);++k)
 {
@@ -234,20 +214,18 @@ for(int j=0;j<number(1);++j)
   for(int i=0;i<number(0);++i)
   {
     std::cerr << "actual displacement along (X,Y,Z)=("<<i*step(0)<<","<<0<<","<<0<<") steps over entire displacement of ("<<number(0)*step(0)<<","<<0<<","<<0<<") steps.\n"<<std::flush;
-
-//////////////////////////////////////////
-//  grab images
-   record_images(*pGrab,image,ImagePath,ImageNumber,i,j,k,x0,y0,x1,y1);
-   map(i,j,k)=1;//satisfied                                   // added by Dahi
- // map.display("map (0=not,1=satisfied)");   // this is for showing a schematic display
-////////////////////////////////////////
-
+    
   if(number(0)>1)  //(added)
   {//X move          (added)
    if(!stepper.move(stepx,velocity)) return 1;
     cimg_library::cimg::wait(wait_time);
-  }//X move     (added)
-
+//////////////////////////////////////////
+//  grab images
+   record_images(grab,image,ImagePath,ImageNumber,i,j,k);
+   map(i,j,k)=1;//satisfied                                   // added by Dahi
+map.display("map (0=not,1=satisfied)");
+////////////////////////////////////////
+ }//X move     (added)
   }//X step loop
 //////////////////////////////////////////////////////////
   //go back to zero on X axis //move backward in X step
@@ -308,7 +286,7 @@ if(number(1)>1)  //(added)
 
 //CLOSE
   stepper.close();
-  pGrab->close();
+  grab.close();
   return 0;
 }//main
 
