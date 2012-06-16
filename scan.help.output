@@ -4,10 +4,32 @@
  usage: ./stepper -h -I
         ./stepper -nx 10 -sx 1 -vx 1000 --device-type uControlXYZ
  version: v0.1.4
- compilation date:  (Jun 16 2012, 12:35:01)
+ compilation date:  (Jun 16 2012, 13:31:58)
 
     --help   = true         : help (or -h option)
-    --info   = false        : show compilation options (or -I option)
+    --info   = true         : show compilation options (or -I option)
+
+ CImg Library 1.25, compiled Jun 16 2012 ( 13:31:58 ) with the following flags :
+
+  > CPU endianness :         Little Endian
+  > Operating System :       Unix          ('cimg_OS'=1)
+  > Display type :           No display    ('cimg_display_type'=0)
+  > Color terminal :         Yes           ('cimg_color_terminal' defined)
+  > Debug messages :         Yes           ('cimg_debug'=2)
+  > Using MPI library :      No            ('cimg_use_mpi' undefined)
+  > Using NetCDF library :   Yes           ('cimg_use_netcdf' defined)
+  > Using PNG library :      Yes           ('cimg_use_png' defined)
+  > Using JPEG library :     Yes           ('cimg_use_jpeg' defined)
+  > Using TIFF library :     Yes           ('cimg_use_tiff' defined)
+  > Using Magick++ library : No            ('cimg_use_magick' undefined)
+  > Using FFTW3 library :    No            ('cimg_use_fftw3' undefined)
+  > Using LAPACK library :   No            ('cimg_use_lapack' undefined)
+  > Path of ImageMagick :    "convert"     ('cimg_imagemagick_path' undefined)
+  > Path of GraphicsMagick : "gm"          ('cimg_graphicsmagick_path' undefined)
+  > Path of 'medcon' :       "medcon"      ('cimg_medcon_path' undefined)
+  > Temporary path :         "/tmp"        ('cimg_temporary_path' undefined)
+
     --device-path = 192.168.0.9  : path of grab device.
     -n       = 10           : number of images to acquire.
     -o       = ./image_x%02d_y%02d_i%03d.jpg : path for image(s).
+    -O       = ./meanFlagNFail.cimg : path for extracted data file (i.e. mean images, flag and fail).

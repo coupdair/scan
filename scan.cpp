@@ -90,10 +90,11 @@ using namespace std;     // added by Dahi
 #include "../grab/grab.h"
 
 
-int record_images(Cgrab &grab,cimg_library::CImg<int> &image,const std::string &ImagePath, int ImageNumber,int i,int j,int k)
+int record_images(Cgrab &grab,cimg_library::CImg<int> &image,const std::string &ImagePath, int ImageNumber,int i,int j,int k,Cdata4scan<float,int> &data4scan)
 {
 std::string file;//file.reserve(ImagePath.size()+64);file[0]='\0';
   cimg_library::CImg<int> data(ImageNumber);   //added by Dahi
+  cimg_library::CImg<float> mean;mean=image;mean.fill(0);
   //for(int l=0;l<ImageNumber;++l)
   //for(int l=0;l<data.width();++l)
   cimg_forX(data,l)
@@ -102,16 +103,23 @@ std::string file;//file.reserve(ImagePath.size()+64);file[0]='\0';
     {//image file name
 std::cerr<<"ImagePath=\""<<ImagePath<<"\"\n"<<std::flush;
     char fileAsCA[512];
-    std::sprintf((char*)fileAsCA/*.c_str()*/,ImagePath.c_str(),i,j,l);//e.g. ImagePath="./img_x%02d_y%02d_i%03d.jpg"
+    std::sprintf((char*)fileAsCA/*.c_str()*/,ImagePath.c_str(),i,j,k,l);//e.g. ImagePath="./img_x%02d_y%02d_z%02d_i%03d.jpg"
     file=fileAsCA;
     }//image file name
 std::cerr<<"file=\""<<file<<"\"\n"<<std::flush;
     if(!grab.grab(image,file)) return 1;
+    mean+=image;//! \todo add data4scan.sum(image) function (and then min, max also)
+std::cerr<<"warning: no crop (in "<<__FILE__<<"/"<<__func__<<"function )\n"<<std::flush;
 ////////////////////////////
    data(l)=l;                                   // added by Dahi
    cout << data(l) << " number of images " << endl; // added by Dahi
    
  }//done      end of grab images
+  //compute mean image
+//! \todo set data4scan type (factory) or add maximum and minimum variable within it
+  mean/=ImageNumber;//! \todo add data4scan.normalise() function (and min, max empty)
+  cimg_library::CImg<float> shared;shared=data4scan(k).get_shared();shared.draw_image(mean,0,0,i,j);//! \todo add draw image in data4scan.normalise()
+  data4scan.flag(i,j,k)=1;//satisfied
 
 //std::cout << file.c_str() << std::endl;
   data.print("data");
@@ -139,20 +147,24 @@ version: "+std::string(VERSION)+"\n compilation date: " \
   const std::string CameraDevicePath=cimg_option("--device-path","192.168.0.9","path of grab device.");
   ///image
   const int ImageNumber=cimg_option("-n",10,"number of images to acquire.");
-  const std::string ImagePath=cimg_option("-o","./image_x%02d_y%02d_i%03d.jpg","path for image(s).");
+  const std::string ImagePath=cimg_option("-o","./image_x%02d_y%02d_z%02d_i%03d.jpg","path for image(s).");
+  const std::string  DataPath=cimg_option("-O","./meanFlagNFail.cimg","path for extracted data file (i.e. mean images, flag and fail).");
   ///////const int         // this added by Dahi to see if the image name is changed or not
   ///stop if help requested
   if(show_help) {/*print_help(std::cerr);*/return 0;}
 //grab device object
+//! \todo [copy] need to do again grab factory (or set 	specific grab)
   Cgrab grab;
 //open
   if(!grab.open(CameraDevicePath/*,DeviceType*/)) return 1;
 //get
   cimg_library::CImg<int> image;
+//! \todo [high] need to do again initialisation of image for its sizes
 ////////////////////////end of camera device/////////////////////////////////
 
 ///////////////////////////start stepper device/////////////////////////////
   ///device
+//! \bug [copy] need to do again stepperNreader for device command line options.
   const std::string DeviceType=cimg_option("--device-type","uControlXYZ","Type of stepper device");
   const std::string StepperDevicePath=cimg_option("--device-path","/dev/ttyUSB0","Path of stepper device");
   const std::string SerialType=cimg_option("--serial-type","serial_system","Type of serial device for stepper (i.e. serial_termios or serial_system)");
@@ -191,6 +203,7 @@ const int step_z=cimg_option("-sz",1,"displacement step along Z axis.");
   ///stop if help requested
   if(show_help) {/*print_help(std::cerr);*/return 0;}
 //stepper device object
+//! \todo [high] need stepper factory
   Cstepper stepper;
 // OPEN 
   if(!stepper.open(StepperDevicePath,SerialType)) return 1;
@@ -201,6 +214,9 @@ const int step_z=cimg_option("-sz",1,"displacement step along Z axis.");
  const int mj = 10;
   cimg_library::CImg<int> map(number(0),number(1),number(2));   //added by Dahi
 map.fill(0);//not_satisfied
+//! \todo [high] need stepper that is not moving/reading (so factory or set specific)
+  Cdata4scan<float,int> data4scan;//mean,flag,fail (e.g. map)
+  data4scan.assign(image.width/*()*/,image.height/*()*/,number(0),number(1),number(2));
 /////////////////////////////////////////////////////////
 cimg_library::CImg<int> stepz(3);stepz.fill(0);stepz(2)=step(2);//e.g. (0,0,10) added stepz
 
@@ -222,7 +238,8 @@ for(int j=0;j<number(1);++j)
     cimg_library::cimg::wait(wait_time);
 //////////////////////////////////////////
 //  grab images
-   record_images(grab,image,ImagePath,ImageNumber,i,j,k);
+   //record_images(grab,image,ImagePath,ImageNumber,i,j,k);
+   record_images(grab,image,ImagePath,ImageNumber,i,j,k,data4scan);//update data4scan: mean and .flag
    map(i,j,k)=1;//satisfied                                   // added by Dahi
 map.display("map (0=not,1=satisfied)");
 ////////////////////////////////////////
@@ -284,7 +301,7 @@ if(number(1)>1)  //(added)
   }//Z reset   (added)
 
   //////////////////////////////////////////////////////////////////
-
+  data4scan.save(DataPath);//save processed data (e.g. mean images), flag (i.e. satisfied (or not) map) and fail (i.e. number of failing map).
 //CLOSE
   stepper.close();
   grab.close();
