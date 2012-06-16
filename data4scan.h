@@ -67,53 +67,28 @@ std::cerr<<this->class_name<<"::"<<__func__<<"()\n"<<std::flush;
   //inline bool sample_type()   {return sample_type;}
   //! component type as last dimension
   inline bool component_type(){return !sample_type;}
-/*}base class* /
+/*}base class*/
 
-  //! load data
-  /** 
-   *
-   * @param[in] file_path: path of file to read
-   *
-   * @return 
-   */
-  bool load(const std::string& file_path)
-  {
-#if cimg_debug>1
-std::cerr<<this->class_name<<"::"<<__func__<<"("<<file_path<<")\n"<<std::flush;
-#endif
-    cimg_library::CImgList<Tvalue>load(file_path.c_str());
-    return true;
-  }//load
-
-  //! load data
+#ifdef cimg_use_netcdf
+  //! save data in NetCDF format
   /** 
    *
    * @param[in] file_path: path of file to write
    *
    * @return 
    */
-//! \todo put this only in Cdata as virtual and add new save_NetCDF as virtual too.
-  bool save(const std::string& file_path)
+  virtual bool save_NetCDF(const std::string& file_path)
   {
 #if cimg_debug>1
 std::cerr<<this->class_name<<"::"<<__func__<<"("<<file_path<<")\n"<<std::flush;
 #endif
-    //get file name extention
-#if version_cimg < 130
-    const char *ext = cimg::filename_split(file_path.c_str());
-#else
-    const char *ext = cimg::split_filename(file_path.c_str());
-#endif //version_cimg
-    if (!cimg::strncasecmp(ext,"nc",2))
-    {//NetCDF
-#ifdef cimg_use_netcdf
-      //dimension names
-      vector<string> dim_names;
-      dim_names.push_back(this->dimension_name[0]);//x
-      dim_names.push_back(this->dimension_name[1]);//y
-      dim_names.push_back(this->dimension_name[2]);//z
-      dim_names.push_back(this->dimension_name[3]);//v
-      string     dim_time=this->dimension_name[4]; //l
+    //dimension names
+    vector<string> dim_names;
+    dim_names.push_back(this->dimension_name[0]);//x
+    dim_names.push_back(this->dimension_name[1]);//y
+    dim_names.push_back(this->dimension_name[2]);//z
+    dim_names.push_back(this->dimension_name[3]);//v
+    string     dim_time=this->dimension_name[4]; //l
       //variable names
 /** /
       ///single
@@ -128,42 +103,34 @@ std::cerr<<this->class_name<<"::"<<__func__<<"("<<file_path<<")\n"<<std::flush;
       vector<string> unit_names;
       unit_names.push_back("none; range=[0-255]");
 */
-      CImgNetCDF<float> cimgListTest4D;
+    CImgNetCDF<float> cimgListTest4D;
 /*
       //CImgList<int> imgList3D(nZ,nz,nv);//i.e. XYZ, same size list
       //CImgNetCDF<int> cimgTest2D;
 (*this).print("5D");
 //imgList3D.print("3D");
 /*move to Cdata*/
-      ////file
-      cout << "CImgNetCDF::saveNetCDFFile(" << file_path << ",...) return " 	<< cimgListTest4D.saveNetCDFFile((char*)file_path.c_str()) << endl;
-      //cout << "CImgNetCDF::setNetCDFFile(" << file_path << ",...) return " 	<< cimgTest2D.setNetCDFFile(cimgListTest4D.pNCFile) << endl;
-      ////dim
-      cout << "CImgNetCDF::addNetCDFDims(" << file_path << ",...) return " 	<< cimgListTest4D.addNetCDFDims((*this)[0],dim_names,dim_time) << endl;
-      //std::vector<NcDim*>vpNCDim;
-      //vpNCDim.push_back(cimgListTest4D.vpNCDim[2]);//X
-      //vpNCDim.push_back(cimgListTest4D.vpNCDim[3]);//Y
-      //cout << "CImgNetCDF::setNetCDFDims(" << file_path << ",...) return " 	<< cimgTest2D.setNetCDFDims(vpNCDim,cimgListTest4D.pNCDimt) << endl;
-      ////var
-      cout << "CImgNetCDF::addNetCDFVar(" << file_path << ",...) return " 	<< cimgListTest4D.addNetCDFVar((*this)[0],this->component_name[0],this->unit_name[0]) << endl;
-      //cout << "CImgNetCDF::addNetCDFVar(" << file_path << ",...) return " 	<< cimgTest2D.addNetCDFVar(imgList3D[0],var_name,unit_name) << endl;
-      ////data
-      cimglist_for((*this),l)
-      {
-        cout << "CImgNetCDF::addNetCDFData(" << file_path << ",...) return " 	<< cimgListTest4D.addNetCDFData((*this)[l]) << endl;
-      //  cout << "CImgNetCDF::addNetCDFData(" << file_path << ",...) return " 	<< cimgTest2D.addNetCDFData(imgList3D[l],cimgListTest4D.loadDimTime()-1) << endl;
-      }
-#else //cimg_use_netcdf
-      std::cerr<<"error: current compiled option do not handle NetCDF (see -I option: cimg_use_netcdf not defined) in "<<this->class_name<<"::"<<__func__<<"("<<file_path<<") function using CImg.v"<<cimg_version<<" version.\n"<<std::flush;
-      return false;
-#endif //!cimg_use_netcdf
-    }//NetCDF
-    else
-    {//other format
-      cimg_library::CImgList<Tvalue>::save(file_path.c_str());
-    }//other format
+    ////file
+    cout << "CImgNetCDF::saveNetCDFFile(" << file_path << ",...) return " 	<< cimgListTest4D.saveNetCDFFile((char*)file_path.c_str()) << endl;
+    //cout << "CImgNetCDF::setNetCDFFile(" << file_path << ",...) return " 	<< cimgTest2D.setNetCDFFile(cimgListTest4D.pNCFile) << endl;
+    ////dim
+    cout << "CImgNetCDF::addNetCDFDims(" << file_path << ",...) return " 	<< cimgListTest4D.addNetCDFDims((*this)[0],dim_names,dim_time) << endl;
+    //std::vector<NcDim*>vpNCDim;
+    //vpNCDim.push_back(cimgListTest4D.vpNCDim[2]);//X
+    //vpNCDim.push_back(cimgListTest4D.vpNCDim[3]);//Y
+    //cout << "CImgNetCDF::setNetCDFDims(" << file_path << ",...) return " 	<< cimgTest2D.setNetCDFDims(vpNCDim,cimgListTest4D.pNCDimt) << endl;
+    ////var
+    cout << "CImgNetCDF::addNetCDFVar(" << file_path << ",...) return " 	<< cimgListTest4D.addNetCDFVar((*this)[0],this->component_name[0],this->unit_name[0]) << endl;
+    //cout << "CImgNetCDF::addNetCDFVar(" << file_path << ",...) return " 	<< cimgTest2D.addNetCDFVar(imgList3D[0],var_name,unit_name) << endl;
+    ////data
+    cimglist_for((*this),l)
+    {
+      cout << "CImgNetCDF::addNetCDFData(" << file_path << ",...) return " 	<< cimgListTest4D.addNetCDFData((*this)[l]) << endl;
+    //  cout << "CImgNetCDF::addNetCDFData(" << file_path << ",...) return " 	<< cimgTest2D.addNetCDFData(imgList3D[l],cimgListTest4D.loadDimTime()-1) << endl;
+    }
     return true;
-  }//save
+  }//save_NetCDF
+#endif //cimg_use_netcdf
 
 };//Cdata4scan class
 

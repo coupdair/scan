@@ -13,7 +13,7 @@ dir=../scan
 fb=scan
 bin=$dir/$fb
 out=$fb.help
-$bin -h 2> $dir/$out; cat -v $dir/$out | sed 's/\^\[\[//g' | sed 's/1m//g' | sed 's/0;0;0m//g' | sed 's/0;35;59m//g' | sed 's/0;32;59m//g' | sed 's/4;31;59m//g' > $dir/$out.output;rm $dir/$out
+$bin -h -I 2> $dir/$out; cat -v $dir/$out | sed 's/\^\[\[//g' | sed 's/1m//g' | sed 's/0;0;0m//g' | sed 's/0;35;59m//g' | sed 's/0;32;59m//g' | sed 's/4;31;59m//g' > $dir/$out.output;rm $dir/$out
 #create documentation
 cat scan.Doxygen | sed 's/\ VERSION/\ '`cat VERSION`'/g' > scan.Doxygen.version
 doxygen scan.Doxygen.version

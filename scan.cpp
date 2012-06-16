@@ -95,7 +95,8 @@ int record_images(Cgrab &grab,cimg_library::CImg<int> &image,const std::string &
 std::string file;//file.reserve(ImagePath.size()+64);file[0]='\0';
   cimg_library::CImg<int> data(ImageNumber);   //added by Dahi
   //for(int l=0;l<ImageNumber;++l)
-  for(int l=0;l<data.width();++l)
+  //for(int l=0;l<data.width();++l)
+  cimg_forX(data,l)
   {//do
 
     {//image file name

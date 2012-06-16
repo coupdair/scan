@@ -2,8 +2,8 @@ PROGRAMS = version lavision scan
 DOCUMENTATIONS = doc
 
 version = v0.1.4
-#version_cimg = 125
-version_cimg = 149
+version_cimg = 125
+#version_cimg = 149
 version_stepper=`cat ../stepper/VERSION`
 version_rs232=`cat ../rs232/VERSION`
 version_grab=`cat ../grab/VERSION`
@@ -24,7 +24,8 @@ prog:$(PROGRAMS)
 
 version: Makefile
 	echo ${version} > VERSION
-	cd ..; rm CImg; ln -s CImg-1.4.9 CImg; cd ./scan/
+#	cd ..; rm CImg; ln -s CImg-1.4.9 CImg; cd ./scan/
+	cd ..; rm CImg; ln -s CImg-1.2.5 CImg; cd ./scan/
 
 lavision: Makefile
 	cd ../LaVision/

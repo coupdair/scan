@@ -4,10 +4,10 @@
  usage: ./stepper -h -I
         ./stepper -nx 10 -sx 1 -vx 1000 --device-type uControlXYZ
  version: v0.1.4
- compilation date:  (Jun 16 2012, 10:59:21)
+ compilation date:  (Jun 16 2012, 12:35:01)
 
-    --help           true                     help (or -h option)
-    --info           false                    show compilation options (or -I option)
-    --device-path    192.168.0.9              path of grab device.
-    -n               10                       number of images to acquire.
-    -o               ./image_x%02d_y%02d_i%03d.jpg path for image(s).
+    --help   = true         : help (or -h option)
+    --info   = false        : show compilation options (or -I option)
+    --device-path = 192.168.0.9  : path of grab device.
+    -n       = 10           : number of images to acquire.
+    -o       = ./image_x%02d_y%02d_i%03d.jpg : path for image(s).
