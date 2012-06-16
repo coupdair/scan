@@ -89,40 +89,55 @@ using namespace std;     // added by Dahi
 //grab library
 #include "../grab/grab.h"
 
+//! set numbered image file name from file path format
+/**
+ * 
+ * \param [out] file_name: image file name with numbers from i,j,k,l (e.g. ./img_x00_y00_z00_i000.png)
+ * \param [in] file_path_format: format for the image file name (e.g. ./img_x%02d_y%02d_z%02d_i%03d.png)
+ * \param [in] i,j,k,l: dimension index for current file name (e.g. 0,0,0,0)
+**/
+bool image_file_name(std::string &file_name,const std::string &file_path_format, int i,int j,int k,int l)
+{
+  char fileAsCA[512];
+  std::sprintf((char*)fileAsCA/*.c_str()*/,file_path_format.c_str(),i,j,k,l);//e.g. file_path_format="./img_x%02d_y%02d_z%02d_i%03d.png"
+  file_name=fileAsCA;
+  return true;
+}//image_file_name
 
+
+//! grab a set of images and save them both to image file and its statistics to memory.
+/**
+ * 
+ * \param [in] grab: camera device.
+ * \param [out] image: last acquired image.
+ * \param [in] ImagePath: format for the image file name (e.g. ./img_x%02d_y%02d_z%02d_i%03d.png)
+ * \param [in] ImageNumber: number of images to record (e.g. size of set)
+ * \param [in] i,j,k: dimension index for current image i.e. file name (e.g. 0,0,0)
+ * \param [out] data4scan: statistics of recorded images and status map.
+**/
 int record_images(Cgrab &grab,cimg_library::CImg<int> &image,const std::string &ImagePath, int ImageNumber,int i,int j,int k,Cdata4scan<float,int> &data4scan)
 {
-std::string file;//file.reserve(ImagePath.size()+64);file[0]='\0';
-  cimg_library::CImg<int> data(ImageNumber);   //added by Dahi
+  std::string file;
   cimg_library::CImg<float> mean;mean=image;mean.fill(0);
-  //for(int l=0;l<ImageNumber;++l)
-  //for(int l=0;l<data.width();++l)
-  cimg_forX(data,l)
+  for(int l=0;l<ImageNumber;++l)
   {//do
-
-    {//image file name
-std::cerr<<"ImagePath=\""<<ImagePath<<"\"\n"<<std::flush;
-    char fileAsCA[512];
-    std::sprintf((char*)fileAsCA/*.c_str()*/,ImagePath.c_str(),i,j,k,l);//e.g. ImagePath="./img_x%02d_y%02d_z%02d_i%03d.jpg"
-    file=fileAsCA;
-    }//image file name
+    image_file_name(file,ImagePath,i,j,k,l);
 std::cerr<<"file=\""<<file<<"\"\n"<<std::flush;
     if(!grab.grab(image,file)) return 1;
     mean+=image;//! \todo add data4scan.sum(image) function (and then min, max also)
 std::cerr<<"warning: no crop (in "<<__FILE__<<"/"<<__func__<<"function )\n"<<std::flush;
-////////////////////////////
-   data(l)=l;                                   // added by Dahi
-   cout << data(l) << " number of images " << endl; // added by Dahi
-   
  }//done      end of grab images
   //compute mean image
 //! \todo set data4scan type (factory) or add maximum and minimum variable within it
   mean/=ImageNumber;//! \todo add data4scan.normalise() function (and min, max empty)
-  cimg_library::CImg<float> shared;shared=data4scan(k).get_shared();shared.draw_image(mean,0,0,i,j);//! \todo add draw image in data4scan.normalise()
+mean.print("mean");
+data4scan.print("data4scan");
+  cimg_library::CImg<float> shared;shared=data4scan(k).get_shared();
+shared.print("shared");
+  shared.draw_image(mean,0,0,i,j);//! \todo add draw image in data4scan.normalise()
+shared.print("shared");
+  //set flag
   data4scan.flag(i,j,k)=1;//satisfied
-
-//std::cout << file.c_str() << std::endl;
-  data.print("data");
   return 0;
 }//record_images
 
@@ -150,16 +165,20 @@ version: "+std::string(VERSION)+"\n compilation date: " \
   const std::string ImagePath=cimg_option("-o","./image_x%02d_y%02d_z%02d_i%03d.jpg","path for image(s).");
   const std::string  DataPath=cimg_option("-O","./meanFlagNFail.cimg","path for extracted data file (i.e. mean images, flag and fail).");
   ///////const int         // this added by Dahi to see if the image name is changed or not
-  ///stop if help requested
-  if(show_help) {/*print_help(std::cerr);*/return 0;}
 //grab device object
+//! \todo [medium] put all grab after command line options.
 //! \todo [copy] need to do again grab factory (or set 	specific grab)
-  Cgrab grab;
+  Cgrab grab;//[factory] static due to loss
 //open
   if(!grab.open(CameraDevicePath/*,DeviceType*/)) return 1;
 //get
   cimg_library::CImg<int> image;
-//! \todo [high] need to do again initialisation of image for its sizes
+//! \todo [high] need to do again initialisation of image for its sizes and for maximum position in image.
+{//[remove] static due to loss
+std::string file;
+image_file_name(file,ImagePath,0,0,0,0);
+if(!grab.grab(image,file)) return 1;
+}//[remove] static due to loss
 ////////////////////////end of camera device/////////////////////////////////
 
 ///////////////////////////start stepper device/////////////////////////////
@@ -216,7 +235,7 @@ const int step_z=cimg_option("-sz",1,"displacement step along Z axis.");
 map.fill(0);//not_satisfied
 //! \todo [high] need stepper that is not moving/reading (so factory or set specific)
   Cdata4scan<float,int> data4scan;//mean,flag,fail (e.g. map)
-  data4scan.assign(image.width/*()*/,image.height/*()*/,number(0),number(1),number(2));
+  data4scan.initialise(image.width/*()*/,image.height/*()*/,number(0),number(1),number(2));
 /////////////////////////////////////////////////////////
 cimg_library::CImg<int> stepz(3);stepz.fill(0);stepz(2)=step(2);//e.g. (0,0,10) added stepz
 
@@ -241,7 +260,7 @@ for(int j=0;j<number(1);++j)
    //record_images(grab,image,ImagePath,ImageNumber,i,j,k);
    record_images(grab,image,ImagePath,ImageNumber,i,j,k,data4scan);//update data4scan: mean and .flag
    map(i,j,k)=1;//satisfied                                   // added by Dahi
-map.display("map (0=not,1=satisfied)");
+//map.display("map (0=not,1=satisfied)");
 ////////////////////////////////////////
  }//X move     (added)
   }//X step loop
@@ -302,6 +321,9 @@ if(number(1)>1)  //(added)
 
   //////////////////////////////////////////////////////////////////
   data4scan.save(DataPath);//save processed data (e.g. mean images), flag (i.e. satisfied (or not) map) and fail (i.e. number of failing map).
+data4scan.print("mean");
+data4scan.flag.print("flag");
+data4scan.fail.print("fail");
 //CLOSE
   stepper.close();
   grab.close();

@@ -69,6 +69,21 @@ std::cerr<<this->class_name<<"::"<<__func__<<"()\n"<<std::flush;
   inline bool component_type(){return !sample_type;}
 /*}base class*/
 
+  //! assign and fill
+  bool initialise(const int width,const int height,const int dimX,const int  dimY,const int dimZ)
+  {
+    this->assign(dimZ,width,height,dimX,dimY);
+    cimglist_for((*this),Z) (*this)(Z).fill(-1);
+    flag.assign(dimX,dimY,dimZ);
+    flag=0;
+    fail.assign(dimX,dimY,dimZ);
+    fail=0;
+CImg<Tmap> hop=CImg<Tmap>::vector(1,2,3);
+hop.print("vector");
+std::cerr<<"hop(0)="<<hop(0)<<" hop(1)="<<hop(1)<<" hop(2)="<<hop(2)<<"\n"<<std::flush;
+    return true;
+  }//initialise
+
 #ifdef cimg_use_netcdf
   //! save data in NetCDF format
   /** 

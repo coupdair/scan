@@ -3,13 +3,13 @@
 
  usage: ./stepper -h -I
         ./stepper -nx 10 -sx 1 -vx 1000 --device-type uControlXYZ
- version: v0.1.4
- compilation date:  (Jun 16 2012, 13:31:58)
+ version: v0.1.5
+ compilation date:  (Jun 16 2012, 19:08:54)
 
     --help   = true         : help (or -h option)
     --info   = true         : show compilation options (or -I option)
 
- CImg Library 1.25, compiled Jun 16 2012 ( 13:31:58 ) with the following flags :
+ CImg Library 1.25, compiled Jun 16 2012 ( 19:08:54 ) with the following flags :
 
   > CPU endianness :         Little Endian
   > Operating System :       Unix          ('cimg_OS'=1)
@@ -31,5 +31,12 @@
 
     --device-path = 192.168.0.9  : path of grab device.
     -n       = 10           : number of images to acquire.
-    -o       = ./image_x%02d_y%02d_i%03d.jpg : path for image(s).
+    -o       = ./image_x%02d_y%02d_z%02d_i%03d.jpg : path for image(s).
     -O       = ./meanFlagNFail.cimg : path for extracted data file (i.e. mean images, flag and fail).
+Cgrab::open("192.168.0.9")
+Cgrab::grab(CImg<int>,"./image_x00_y00_z00_i000.jpg")
+<CImgIOException>
+
+cimg::fopen() : File './image_x00_y00_z00_i000.jpg' cannot be opened for reading.
+
+terminate called after throwing an instance of 'cimg_library::CImgIOException'

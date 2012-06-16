@@ -1,0 +1,2 @@
+clean; make && ./scan -h --device-path off_line -o ~/dataseb/AFDAR/cameraMTF/focus/image_x%02d_y%02d_z%02d_i%03d.jpg 
+
