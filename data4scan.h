@@ -51,9 +51,11 @@ std::cerr<<this->class_name<<"::"<<__func__<<"()\n"<<std::flush;
     this->sample_type=true;
 #ifdef cimg_use_netcdf
     ///set variable name
+    this->component_name.clear();
     this->component_name.push_back("intensity");
     this->unit_name.push_back("none");
     ///set dimendion names
+    this->dimension_name.clear();
     this->dimension_name.push_back("x");//image width
     this->dimension_name.push_back("y");//image height
     this->dimension_name.push_back("X");//scanning width

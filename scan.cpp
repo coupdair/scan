@@ -130,12 +130,7 @@ std::cerr<<"warning: no crop (in "<<__FILE__<<"/"<<__func__<<"function )\n"<<std
   //compute mean image
 //! \todo set data4scan type (factory) or add maximum and minimum variable within it
   mean/=ImageNumber;//! \todo add data4scan.normalise() function (and min, max empty)
-mean.print("mean");
-data4scan.print("data4scan");
-  cimg_library::CImg<float> shared;shared=data4scan(k).get_shared();
-shared.print("shared");
-  shared.draw_image(mean,0,0,i,j);//! \todo add draw image in data4scan.normalise()
-shared.print("shared");
+  (data4scan(k)).draw_image(mean,0,0,i,j);//! \todo add draw image in data4scan.normalise()
   //set flag
   data4scan.flag(i,j,k)=1;//satisfied
   return 0;
