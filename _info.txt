@@ -1,2 +1,33 @@
-clean; make && ./scan -h --device-path off_line -o ~/dataseb/AFDAR/cameraMTF/focus/image_x%02d_y%02d_z%02d_i%03d.jpg 
+clean; make && ./scan -h --device-path off_line -o ~/dataseb/AFDAR/cameraMTF/focus/image_x%02d_y%02d_z%02d_i%03d.jpg
+
+#run
+##one sample (i.e. first sample; mean on 1 Sample)
+./scan --device-path off_line -o ~/dataseb/AFDAR/cameraMTF/focus/scanXYZ_sx1sy1sz1_00/image_x%02d_y%02d_z%02d_i%03d.jpg -nx 4 -ny 4 -nz 61 -n 1  -O ./meanFlagNFail.i000.xyXYZ.nc --wait-time 10 && ncdump -h ./meanFlagNFail.i000.xyXYZ.nc
+##one sample (e.g. thrid sample) -CImg.convert-
+ls ~/dataseb/AFDAR/cameraMTF/focus/scanXYZ_sx1sy1sz1_00/image_x00_y02_z??_i002.jpg | ../convert/CImg.convert -i stdin --sample --dimension-names x,y,Z,d,e --variable-name intensity -o meanFlagNFail.i002.xyZ@X0Y2.nc && ncwa -a d,e meanFlagNFail.i002.xyZ@X0Y2.nc meanFlagNFail.i002.3D.xyZ@X0Y2.nc && ncdump -h meanFlagNFail.i002.3D.xyZ@X0Y2.nc
+###3D extract for paraview
+ncks -O -d X,0,0 -d Y,2,2 meanFlagNFail.i000.xyXYZ.nc meanFlagNFail.i000.3D.xyZ@X0Y2.nc; ncwa -a X,Y -O meanFlagNFail.i000.3D.xyZ@X0Y2.nc meanFlagNFail.i000.3D.xyZ@X0Y2.nc && ncdump -h meanFlagNFail.i000.3D.xyZ@X0Y2.nc && ncdump -h meanFlagNFail.i000.3D.xyZ@X0Y2.nc
+
+##average of 10 Samples
+./scan --device-path off_line -o ~/dataseb/AFDAR/cameraMTF/focus/scanXYZ_sx1sy1sz1_00/image_x%02d_y%02d_z%02d_i%03d.jpg -nx 4 -ny 4 -nz 61 -n 10 -O ./meanFlagNFail.10S.xyXYZ.nc --wait-time 10 && ncdump -h ./meanFlagNFail.10S.xyXYZ.nc
+###3D extract for paraview 
+ncks -O -d X,0,0 -d Y,2,2 meanFlagNFail.10S.xyXYZ.nc meanFlagNFail.10S.3D.xyZ@X0Y2.nc; ncwa -a X,Y -O meanFlagNFail.10S.3D.xyZ@X0Y2.nc meanFlagNFail.10S.3D.xyZ@X0Y2.nc && ncdump -h meanFlagNFail.10S.3D.xyZ@X0Y2.nc
+###or 3D extract for PPlml (with XYloop)
+for((X=0;X<4;X++)); do for((Y=0;Y<4;Y++)); do fo=meanFlagNFail.10S.3D.xyZ@X${X}Y${Y}.nc; ncks -O -d X,$X,$X -d Y,$Y,$Y meanFlagNFail.10S.xyXYZ.nc $fo; ncwa -O -a X,Y $fo $fo; ncpdq -O -a x,Z $fo $fo; ncdump -h $fo; done; done
+
+#paraview
+../convert/paraview.sh &
+
+#3D analysis (PPlml)
+##along x (bof)
+ncgen -o parameters.nc parameters.cdl && ./PPlml.linux32 -p parameters.nc -v intensity -i meanFlagNFail.10S.3D.xyZ@X0Y2.nc -o meanFlagNFail.10S.3D.xyZ@X0Y2.3Danalysis.nc && ncdump -h meanFlagNFail.10S.3D.xyZ@X0Y2.3Danalysis.nc
+
+##along Z
+ncpdq -O -a x,Z meanFlagNFail.10S.3D.xyZ@X0Y2.nc meanFlagNFail.10S.3D.Zyx@X0Y2.nc && ncdump -h meanFlagNFail.10S.3D.Zyx@X0Y2.nc
+ncgen -o parameters.nc parameters.cdl && ./PPlml.linux32 -p parameters.nc -v intensity -i meanFlagNFail.10S.3D.Zyx@X0Y2.nc -o meanFlagNFail.10S.3D.Zyx@X0Y2.3Danalysis.nc && ncdump -h meanFlagNFail.10S.3D.Zyx@X0Y2.3Danalysis.nc
+###with XYloop
+ncgen -o parameters.nc parameters.cdl
+for((X=0;X<4;X++)); do for((Y=0;Y<4;Y++)); do fb=meanFlagNFail.10S.3D.xyZ@X${X}Y${Y}; fi=$fb.nc; fo=$fb.3Danalysis.nc; ./PPlml.linux32 -p parameters.nc -v intensity -i $fi -o $fo; done; done
+##ncview: see circle_radius (map and profiles: ) or ( ), center_x=focus position in Z direction, 
+ncview meanFlagNFail.10S.3D.Zyx@X0Y2.3Danalysis.nc &
 
