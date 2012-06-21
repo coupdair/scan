@@ -86,6 +86,52 @@ std::cerr<<"hop(0)="<<hop(0)<<" hop(1)="<<hop(1)<<" hop(2)="<<hop(2)<<"\n"<<std:
     return true;
   }//initialise
 
+  //! maximum of the 5D data
+  /**
+   * return maximum value
+  **/
+  Tvalue maximum(int &x, int &y, int &X, int &Y, int &Z)
+  {
+    Tvalue max;
+    //get stat for the 4D container
+    CImgList<> stat(this->size);
+    cimglist_for((*this),l)
+    {
+      stat[l]=(*this)[l].get_stats();
+max=(*this)[l].max();
+std::cerr<<"Z="<<l<<"\nmax="<<max<<"\n"<<std::flush;
+(*this)[l].print("data");
+stat[l].print("stat");
+    }
+    //get max for the 5D container
+    ///get Z max position and its value
+    int Zmax=-1;
+    max=stat[0](1);
+    cimglist_for(stat,l) if( stat[l](1)>max ) {max=stat[l](1);Zmax=l;}
+    const int dv=(*this)[0].dim;
+    const int dz=(*this)[0].depth;
+    const int dy=(*this)[0].height;
+    const int dx=(*this)[0].width;
+    const int pos=stat[Zmax](5);//position as offset
+    ///set (x,y,X,Y,Z) max position
+    Z=Zmax;//l Z
+    Y=pos/(dz*dy*dx);//v Y
+    X=-1;//(pos-(Y*dz*dy*dx))/dy*dx;//z X
+    y=-1;//(int)(stat(5))-X*this->dimy();//y y
+    x=-1;//(int)(stat(5))-(y+X)//x x
+std::cerr<<"max="<<75<<"@(x,y,X,Y,Z)=("<<35<<","<<32<<","<<2<<","<<3<<","<<4<<")\n"<<std::flush;//current example
+std::cerr<<"max="<<max<<"@(x,y,X,Y,Z)=("<<x<<","<<y<<","<<X<<","<<Y<<","<<Z<<")\n"<<std::flush;
+    return max;
+  }//maximum
+  //! maximum of the 5D data
+  /**
+   * return maximum value
+  **/
+  Tvalue maximum(CImg<int> &pos)
+  {
+    return maximum(pos(0),pos(1),pos(2),pos(3),pos(4));
+  }//maximum
+
 #ifdef cimg_use_netcdf
   //! save data in NetCDF format
   /** 
@@ -140,6 +186,8 @@ std::cerr<<this->class_name<<"::"<<__func__<<"("<<file_path<<")\n"<<std::flush;
     cout << "CImgNetCDF::addNetCDFVar(" << file_path << ",...) return " 	<< cimgListTest4D.addNetCDFVar((*this)[0],this->component_name[0],this->unit_name[0]) << endl;
 //! \todo . add maximum position as attribute
     {//maximum position as attribute
+    CImg<int> max_position(5);max_position=-1;
+this->maximum(max_position);
     cimgListTest4D.pNCvar[0].add_att("maximum",123);//NcVar *pNCvar;
     }//maximum position as attribute
     //cout << "CImgNetCDF::addNetCDFVar(" << file_path << ",...) return " 	<< cimgTest2D.addNetCDFVar(imgList3D[0],var_name,unit_name) << endl;
