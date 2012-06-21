@@ -98,28 +98,25 @@ std::cerr<<"hop(0)="<<hop(0)<<" hop(1)="<<hop(1)<<" hop(2)="<<hop(2)<<"\n"<<std:
     cimglist_for((*this),l)
     {
       stat[l]=(*this)[l].get_stats();
+/*
 max=(*this)[l].max();
 std::cerr<<"Z="<<l<<"\nmax="<<max<<"\n"<<std::flush;
 (*this)[l].print("data");
 stat[l].print("stat");
+*/
     }
     //get max for the 5D container
     ///get Z max position and its value
     int Zmax=-1;
-    max=stat[0](1);
-    cimglist_for(stat,l) if( stat[l](1)>max ) {max=stat[l](1);Zmax=l;}
-    const long dv=(*this)[0].dim;
-    const long dz=(*this)[0].depth;
-    const long dy=(*this)[0].height;
-    const long dx=(*this)[0].width;
-    const long pos=stat[Zmax](5);//position as offset
+    max=cimg::type<Tvalue>::min();
+    cimglist_for(stat,l) if( stat[l](1)>max ) {max=stat[l](1);Zmax=l;}//max for each CImg from list
     ///set (x,y,X,Y,Z) max position
-    Z=Zmax;//l Z
-    Y=pos/(dz*dy*dx);//v Y
-    X=(pos-((long)Y*dz*dy*dx))/(dy*dx);//z X
-    y=(pos-((long)Y*dz*dy*dx)-((long)X*dy*dx))/dx;//y y
-    x=(pos-((long)Y*dz*dy*dx)-((long)X*dy*dx)-((long)y*dx));//x x
-std::cerr<<"max="<<75<<"@(x,y,X,Y,Z)=("<<35<<","<<32<<","<<2<<","<<3<<","<<4<<")\n"<<std::flush;//current example
+    Z=Zmax;//set (l) i.e. (Z)
+    if( !((*this)[Zmax].contains((*this)[Zmax].data[(int)stat[Zmax](5)],x,y,X,Y)) )//set (x,y,z,v) i.e. (x,y,X,Y)
+    {
+      x=y=X=Y=-1;//dummy values
+      return cimg::type<Tvalue>::min();//absolute minimum value for the type
+    }
 std::cerr<<"max="<<max<<"@(x,y,X,Y,Z)=("<<x<<","<<y<<","<<X<<","<<Y<<","<<Z<<")\n"<<std::flush;
     return max;
   }//maximum
