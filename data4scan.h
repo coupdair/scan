@@ -166,18 +166,24 @@ std::cerr<<this->class_name<<"::"<<__func__<<"("<<file_path<<")\n"<<std::flush;
     CImgList<int> imgList3D(flag.depth);//for flag: XY(Z), same size list
     CImgNetCDF<int> cimgTest2D;
     cimglist_for(imgList3D,Z) imgList3D(Z)=flag.get_shared_plane(Z);
+    CImgList<int> imgList3Dx(fail.depth);//for fail: XY(Z), same size list
+    CImgNetCDF<int> cimgTest2Dx;
+    cimglist_for(imgList3Dx,Z) imgList3Dx(Z)=fail.get_shared_plane(Z);
 (*this).print("5D");
 imgList3D.print("3D");
+imgList3Dx.print("3D");
 /*move to Cdata*/
     ////file
     cout << "CImgNetCDF::saveNetCDFFile(" << file_path << ",...) return " 	<< cimgListTest4D.saveNetCDFFile((char*)file_path.c_str()) << endl;
     cout << "CImgNetCDF::setNetCDFFile(" << file_path << ",...) return " 	<< cimgTest2D.setNetCDFFile(cimgListTest4D.pNCFile) << endl;
+    cout << "CImgNetCDF::setNetCDFFile(" << file_path << ",...) return " 	<< cimgTest2Dx.setNetCDFFile(cimgListTest4D.pNCFile) << endl;
     ////dim
     cout << "CImgNetCDF::addNetCDFDims(" << file_path << ",...) return " 	<< cimgListTest4D.addNetCDFDims((*this)[0],dim_names,dim_time) << endl;
     std::vector<NcDim*>vpNCDim;
     vpNCDim.push_back(cimgListTest4D.vpNCDim[2]);//X
     vpNCDim.push_back(cimgListTest4D.vpNCDim[3]);//Y
     cout << "CImgNetCDF::setNetCDFDims(" << file_path << ",...) return " 	<< cimgTest2D.setNetCDFDims(vpNCDim,cimgListTest4D.pNCDimt) << endl;
+    cout << "CImgNetCDF::setNetCDFDims(" << file_path << ",...) return " 	<< cimgTest2Dx.setNetCDFDims(vpNCDim,cimgListTest4D.pNCDimt) << endl;
     ////var
     cout << "CImgNetCDF::addNetCDFVar(" << file_path << ",...) return " 	<< cimgListTest4D.addNetCDFVar((*this)[0],this->component_name[0],this->unit_name[0]) << endl;
     {//maximum position as attribute
@@ -191,11 +197,13 @@ imgList3D.print("3D");
     cimgListTest4D.pNCvar[0].add_att("maximum_position_order",axis_order.size(),axis_order.c_str());
     }//maximum position as attribute
     cout << "CImgNetCDF::addNetCDFVar(" << file_path << ",...) return " 	<< cimgTest2D.addNetCDFVar(imgList3D[0],flag_name,flag_unit_name) << endl;
+    cout << "CImgNetCDF::addNetCDFVar(" << file_path << ",...) return " 	<< cimgTest2Dx.addNetCDFVar(imgList3Dx[0],fail_name,fail_unit_name) << endl;
     ////data
     cimglist_for((*this),l)
     {
       cout << "CImgNetCDF::addNetCDFData(" << file_path << ",...) return " 	<< cimgListTest4D.addNetCDFData((*this)[l]) << endl;
       cout << "CImgNetCDF::addNetCDFData(" << file_path << ",...) return " 	<< cimgTest2D.addNetCDFData(imgList3D[l],cimgListTest4D.loadDimTime()-1) << endl;
+      cout << "CImgNetCDF::addNetCDFData(" << file_path << ",...) return " 	<< cimgTest2Dx.addNetCDFData(imgList3Dx[l],cimgListTest4D.loadDimTime()-1) << endl;
     }
     return true;
   }//save_NetCDF
