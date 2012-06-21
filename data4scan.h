@@ -13,29 +13,12 @@ template<typename Tvalue, typename Tmap>
 class Cdata4scan: public Cdata<Tvalue>
 {
 public:
-/*{base class* /
-  //! class name for debug only
-#if cimg_debug>1
-  std::string class_name;
-#endif
-  //! class (or library) version for information only
-  std::string class_version;
-  //! sample type as last dimension (if false it is component type)
-  bool sample_type;//!component type
-#ifdef cimg_use_netcdf
-  //! data information: 
-  std::vector<std::string> component_name;
-  std::vector<std::string> unit_name;
-  //! data information
-  std::vector<std::string> dimension_name;
-#endif //cimg_use_netcdf
-/*}base class*/
-
-///scan (copy in scan)
+  //! position flag
   cimg_library::CImg<Tmap> flag;//3D (X,Y,Z) 0 then red=0, green=1
+  //! position fail counter
   cimg_library::CImg<Tmap> fail;//3D (X,Y,Z) 0 then increment++
 #ifdef cimg_use_netcdf
-  //! map ad fail information: 
+  //! flag and fail information:
   std::string flag_name;
   std::string flag_unit_name;
   std::string fail_name;
@@ -76,13 +59,6 @@ std::cerr<<this->class_name<<"::"<<__func__<<"()\n"<<std::flush;
 #endif //cimg_use_netcdf
   }//constructor
 
-/*{base class* /
-  //! sample type as last dimension
-  //inline bool sample_type()   {return sample_type;}
-  //! component type as last dimension
-  inline bool component_type(){return !sample_type;}
-/*}base class*/
-
   //! assign and fill
   bool initialise(const int width,const int height,const int dimX,const int  dimY,const int dimZ)
   {
@@ -110,12 +86,10 @@ std::cerr<<"hop(0)="<<hop(0)<<" hop(1)="<<hop(1)<<" hop(2)="<<hop(2)<<"\n"<<std:
     cimglist_for((*this),l)
     {
       stat[l]=(*this)[l].get_stats();
-/*
-max=(*this)[l].max();
-std::cerr<<"Z="<<l<<"\nmax="<<max<<"\n"<<std::flush;
-(*this)[l].print("data");
-stat[l].print("stat");
-*/
+//max=(*this)[l].max();
+//std::cerr<<"Z="<<l<<"\nmax="<<max<<"\n"<<std::flush;
+//(*this)[l].print("data");
+//stat[l].print("stat");
     }
     //get max for the 5D container
     ///get Z max position and its value
@@ -162,17 +136,21 @@ std::cerr<<this->class_name<<"::"<<__func__<<"("<<file_path<<")\n"<<std::flush;
     dim_names.push_back(this->dimension_name[3]);//v
     string     dim_time=this->dimension_name[4]; //l
     //NetCDF for CImg
-    CImgNetCDF<float> cimgListTest4D;//for data: xyXY(Z)
-    CImgList<int> imgList3D(flag.depth);//for flag: XY(Z), same size list
-    CImgNetCDF<int> cimgTest2D;
+    ///for data: xyXY(Z)
+    CImgNetCDF<Tvalue> cimgListTest4D;
+    ///for flag: XY(Z), same size list
+    CImgList<Tmap> imgList3D(flag.depth);
+    CImgNetCDF<Tmap> cimgTest2D;
     cimglist_for(imgList3D,Z) imgList3D(Z)=flag.get_shared_plane(Z);
-    CImgList<int> imgList3Dx(fail.depth);//for fail: XY(Z), same size list
-    CImgNetCDF<int> cimgTest2Dx;
+    ///for fail: XY(Z), same size list
+    CImgList<Tmap> imgList3Dx(fail.depth);
+    CImgNetCDF<Tmap> cimgTest2Dx;
     cimglist_for(imgList3Dx,Z) imgList3Dx(Z)=fail.get_shared_plane(Z);
-(*this).print("5D");
-imgList3D.print("3D");
-imgList3Dx.print("3D");
-/*move to Cdata*/
+//(*this).print("5D");
+//imgList3D.print("3D");
+//imgList3Dx.print("3D");
+//! \todo [low] move to Cdata in saveNetCDFFile, addNetCDFheader, addNetCDFData for data only.
+//! \todo [low] move to Cdata4scan in setNetCDFFile, setNetCDFheader, addNetCDFData for flag and fail only.
     ////file
     cout << "CImgNetCDF::saveNetCDFFile(" << file_path << ",...) return " 	<< cimgListTest4D.saveNetCDFFile((char*)file_path.c_str()) << endl;
     cout << "CImgNetCDF::setNetCDFFile(" << file_path << ",...) return " 	<< cimgTest2D.setNetCDFFile(cimgListTest4D.pNCFile) << endl;
