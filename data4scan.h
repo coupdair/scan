@@ -184,8 +184,13 @@ std::cerr<<this->class_name<<"::"<<__func__<<"("<<file_path<<")\n"<<std::flush;
 //! \todo . add maximum position as attribute
     {//maximum position as attribute
     CImg<int> max_position(5);max_position=-1;
-this->maximum(max_position);
-    cimgListTest4D.pNCvar[0].add_att("maximum",123);//NcVar *pNCvar;
+    //maximum
+    cimgListTest4D.pNCvar[0].add_att("maximum",this->maximum(max_position));
+    //maximum position
+    cimgListTest4D.pNCvar[0].add_att("maximum_position",max_position.size(),&max_position.data[0]);
+    //maximum position order
+    std::string axis_order="(";for(int i=0;i<this->dimension_name.size()-1;++i) axis_order+=this->dimension_name[i]+","; axis_order+=this->dimension_name[this->dimension_name.size()-1]+")";
+    cimgListTest4D.pNCvar[0].add_att("maximum_position_order",axis_order.size(),axis_order.c_str());
     }//maximum position as attribute
     //cout << "CImgNetCDF::addNetCDFVar(" << file_path << ",...) return " 	<< cimgTest2D.addNetCDFVar(imgList3D[0],var_name,unit_name) << endl;
     ////data
