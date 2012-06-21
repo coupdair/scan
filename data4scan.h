@@ -138,6 +138,10 @@ std::cerr<<this->class_name<<"::"<<__func__<<"("<<file_path<<")\n"<<std::flush;
     //cout << "CImgNetCDF::setNetCDFDims(" << file_path << ",...) return " 	<< cimgTest2D.setNetCDFDims(vpNCDim,cimgListTest4D.pNCDimt) << endl;
     ////var
     cout << "CImgNetCDF::addNetCDFVar(" << file_path << ",...) return " 	<< cimgListTest4D.addNetCDFVar((*this)[0],this->component_name[0],this->unit_name[0]) << endl;
+//! \todo . add maximum position as attribute
+    {//maximum position as attribute
+    cimgListTest4D.pNCvar[0].add_att("maximum",123);//NcVar *pNCvar;
+    }//maximum position as attribute
     //cout << "CImgNetCDF::addNetCDFVar(" << file_path << ",...) return " 	<< cimgTest2D.addNetCDFVar(imgList3D[0],var_name,unit_name) << endl;
     ////data
     cimglist_for((*this),l)

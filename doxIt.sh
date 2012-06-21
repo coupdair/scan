@@ -1,7 +1,7 @@
 #! /bin/bash
 
-##list='scan stepper grab rs232 CImg'
-list='scan'
+##list='scan stepper grab rs232 CImg CImg.Tool'
+list='scan CImg.Tool'
 #move code versions to temporary directory
 for d in $list
 do
