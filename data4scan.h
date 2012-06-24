@@ -24,6 +24,10 @@ public:
   std::string fail_name;
   std::string fail_unit_name;
 #endif //cimg_use_netcdf
+  //! temporary image count for statistics
+  unsigned int tmp_count;
+  //! temporary image for mean
+  cimg_library::CImg<Tvalue> tmp_mean;//2D (x,y)
 
   //! constructor
   /**
@@ -59,20 +63,55 @@ std::cerr<<this->class_name<<"::"<<__func__<<"()\n"<<std::flush;
 #endif //cimg_use_netcdf
   }//constructor
 
+  //! assign and fill temporary variables for statistics
+  bool tmp_initialise(const int width,const int height,const int dimX,const int  dimY,const int dimZ)
+  {
+    tmp_count=0;
+    tmp_mean.assign(width,height);
+    tmp_mean=0.0;
+CImg<Tmap> hop=CImg<Tmap>::vector(1,2,3);
+hop.print("vector");
+std::cerr<<"hop(0)="<<hop(0)<<" hop(1)="<<hop(1)<<" hop(2)="<<hop(2)<<"\n"<<std::flush;
+    return true;
+  }//initialise
+
   //! assign and fill
   bool initialise(const int width,const int height,const int dimX,const int  dimY,const int dimZ)
   {
+    ///init.
     this->assign(dimZ,width,height,dimX,dimY);
     cimglist_for((*this),Z) (*this)(Z).fill(-1);
     flag.assign(dimX,dimY,dimZ);
     flag=0;
     fail.assign(dimX,dimY,dimZ);
     fail=0;
-CImg<Tmap> hop=CImg<Tmap>::vector(1,2,3);
-hop.print("vector");
-std::cerr<<"hop(0)="<<hop(0)<<" hop(1)="<<hop(1)<<" hop(2)="<<hop(2)<<"\n"<<std::flush;
+    ///temporary init.
+    return tmp_initialise(width,height, dimX,dimY,dimZ);
+  }//initialise
+
+  //! add sample data contribution to statistics
+  // \see normalise
+  bool add_sample(cimg_library::CImg<int> &image,const int i,const int j,const int k)
+  {
+//! \todo [high] do inplace add for mean
+    tmp_mean+=image;
+    tmp_count++;
+//! \todo [very low] do also min, max, ...
     return true;
   }//initialise
+
+  //! normalise statistics for all added samples and set data at (i,j,k) postion.
+  // \see add_sample
+  bool normalise(const int i,const int j,const int k)
+  {
+    if(tmp_count<1) return false;
+//! \todo [high] do inplace add for mean
+    tmp_mean/=tmp_count;
+    ((*this)(k)).draw_image(tmp_mean,0,0,i,j);
+    //reset mean for a next sum (e.g. setup following usage).
+    tmp_mean=0.0;tmp_count=0;
+    return true;
+  }//normalise
 
   //! maximum of the 5D data
   /**

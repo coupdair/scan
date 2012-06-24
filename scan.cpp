@@ -115,7 +115,7 @@ bool image_file_name(std::string &file_name,const std::string &file_path_format,
  * \param [in] i,j,k: dimension index for current image i.e. file name (e.g. 0,0,0)
  * \param [out] data4scan: statistics of recorded images and status map.
 **/
-int record_images(Cgrab &grab,cimg_library::CImg<int> &image,const std::string &ImagePath, int ImageNumber,int i,int j,int k,Cdata4scan<float,int> &data4scan)
+int record_images(Cgrab &grab,cimg_library::CImg<int> &image,const std::string &ImagePath,const int ImageNumber,const int i,const int j,const int k,Cdata4scan<float,int> &data4scan)
 {
   std::string file;
   cimg_library::CImg<float> mean;mean=image;mean.fill(0);
@@ -124,13 +124,12 @@ int record_images(Cgrab &grab,cimg_library::CImg<int> &image,const std::string &
     image_file_name(file,ImagePath,i,j,k,l);
 std::cerr<<"file=\""<<file<<"\"\n"<<std::flush;
     if(!grab.grab(image,file)) return 1;
-    mean+=image;//! \todo add data4scan.sum(image) function (and then min, max also)
+    data4scan.add_sample(image,i,j,k);
 std::cerr<<"warning: no crop (in "<<__FILE__<<"/"<<__func__<<"function )\n"<<std::flush;
  }//done      end of grab images
   //compute mean image
-//! \todo set data4scan type (factory) or add maximum and minimum variable within it
-  mean/=ImageNumber;//! \todo add data4scan.normalise() function (and min, max empty)
-  (data4scan(k)).draw_image(mean,0,0,i,j);//! \todo add draw image in data4scan.normalise()
+//! \todo [low] set data4scan type (factory) or add maximum and minimum variable within it
+  data4scan.normalise(i,j,k);//! \todo . add draw image in data4scan.normalise()
   //set flag
   data4scan.flag(i,j,k)=1;//satisfied
   return 0;
