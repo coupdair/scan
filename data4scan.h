@@ -22,8 +22,10 @@ public:
   //! region of interest of full image information
   // note: size of ROI is this->width and this->height.
   cimg_library::CImg<int> ROI_origin;//2C (x0,y0)
-  //! region of interest of full image information
-  cimg_library::CImg<int> full_image_maximum;//2C (x0,y0)
+  //! first full image maximum value
+  Tvalue full_image_maximum;
+  //! first full image maximum position
+  cimg_library::CImg<int> full_image_maximum_position;//2C (x0,y0)
 #ifdef cimg_use_netcdf
   //! flag and fail information:
   std::string flag_name;
@@ -54,6 +56,7 @@ std::cerr<<this->class_name<<"::"<<__func__<<"()\n"<<std::flush;
     ///set variable name
     this->component_name.clear();
     this->component_name.push_back("intensity");
+    this->unit_name.clear();
     this->unit_name.push_back("gray level");
     ///set dimendion names
     this->dimension_name.clear();
@@ -97,8 +100,9 @@ std::cerr<<"hop(0)="<<hop(0)<<" hop(1)="<<hop(1)<<" hop(2)="<<hop(2)<<"\n"<<std:
     full_image_size=-1;
     ROI_origin.assign(2);
     ROI_origin=-1;
-    full_image_maximum.assign(2);
-    full_image_maximum=-1;
+    full_image_maximum=-99;
+    full_image_maximum_position.assign(2);
+    full_image_maximum_position=-1;
     ///temporary init.
     return tmp_initialise(width,height, dimX,dimY,dimZ);
   }//initialise
@@ -221,8 +225,10 @@ std::cerr<<this->class_name<<"::"<<__func__<<"("<<file_path<<")\n"<<std::flush;
     CImg<int> max_position(5);max_position=-1;
     //maximum
     cimgListTest4D.pNCvar[0].add_att("maximum",this->maximum(max_position));
+    cimgListTest4D.pNCvar[0].add_att("maximum_unit",this->unit_name[0].size(),this->unit_name[0].c_str());
     //maximum position
     cimgListTest4D.pNCvar[0].add_att("maximum_position",max_position.size(),&max_position.data[0]);
+    cimgListTest4D.pNCvar[0].add_att("maximum_position_unit",5,"pixel");
     //maximum position order
     std::string axis_order="(";for(int i=0;i<this->dimension_name.size()-1;++i) axis_order+=this->dimension_name[i]+","; axis_order+=this->dimension_name[this->dimension_name.size()-1]+")";
     cimgListTest4D.pNCvar[0].add_att("maximum_position_order",axis_order.size(),axis_order.c_str());
@@ -230,6 +236,22 @@ std::cerr<<this->class_name<<"::"<<__func__<<"("<<file_path<<")\n"<<std::flush;
     {//full image informations as attribute
     //image size
     cimgListTest4D.pNCvar[0].add_att("full_image_size",this->full_image_size.width,&(this->full_image_size.data[0]));
+    //image size order
+    std::string axis_order="("+this->dimension_name[0]+","+this->dimension_name[1]+")";
+    cimgListTest4D.pNCvar[0].add_att("full_image_dimension_order",axis_order.size(),axis_order.c_str());
+    //maximum
+    cimgListTest4D.pNCvar[0].add_att("first_full_image_maximum",full_image_maximum);
+    cimgListTest4D.pNCvar[0].add_att("first_full_image_maximum_unit",this->unit_name[0].size(),this->unit_name[0].c_str());
+    cimgListTest4D.pNCvar[0].add_att("first_full_image_maximum_position",this->full_image_maximum_position.width,&(this->full_image_maximum_position.data[0]));
+    cimgListTest4D.pNCvar[0].add_att("first_full_image_maximum_position_unit",5,"pixel");
+    //ROI
+    cimg_library::CImg<int> ROI_rectangle;//4C (x0,y0,x1,y1)
+    ROI_rectangle=CImg<int>::vector(ROI_origin(0),ROI_origin(1),(*this)[0].width-ROI_origin(0)-1,(*this)[0].height-ROI_origin(1)-1);
+    cimgListTest4D.pNCvar[0].add_att("region_of_interest_rectangle",ROI_rectangle.height,&(ROI_rectangle.data[0]));
+    cimgListTest4D.pNCvar[0].add_att("region_of_interest_rectangle_unit",5,"pixel");
+    //ROI coordinate order
+    std::string rectangle_order="("+this->dimension_name[0]+"0,"+this->dimension_name[1]+"0, "+this->dimension_name[0]+"1,"+this->dimension_name[1]+"1)";
+    cimgListTest4D.pNCvar[0].add_att("region_of_interest_rectangle_order",rectangle_order.size(),rectangle_order.c_str());
     }//full image informations as attribute
     cout << "CImgNetCDF::addNetCDFVar(" << file_path << ",...) return " 	<< cimgTest2D.addNetCDFVar(imgList3D[0],flag_name,flag_unit_name) << endl;
     cout << "CImgNetCDF::addNetCDFVar(" << file_path << ",...) return " 	<< cimgTest2Dx.addNetCDFVar(imgList3Dx[0],fail_name,fail_unit_name) << endl;
