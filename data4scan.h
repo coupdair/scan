@@ -17,6 +17,13 @@ public:
   cimg_library::CImg<Tmap> flag;//3D (X,Y,Z) 0 then red=0, green=1
   //! position fail counter
   cimg_library::CImg<Tmap> fail;//3D (X,Y,Z) 0 then increment++
+  //! full image information
+  cimg_library::CImg<int> full_image_size;//2C (dimx,dimy)
+  //! region of interest of full image information
+  // note: size of ROI is this->width and this->height.
+  cimg_library::CImg<int> ROI_origin;//2C (x0,y0)
+  //! region of interest of full image information
+  cimg_library::CImg<int> full_image_maximum;//2C (x0,y0)
 #ifdef cimg_use_netcdf
   //! flag and fail information:
   std::string flag_name;
@@ -78,13 +85,20 @@ std::cerr<<"hop(0)="<<hop(0)<<" hop(1)="<<hop(1)<<" hop(2)="<<hop(2)<<"\n"<<std:
   //! assign and fill
   bool initialise(const int width,const int height,const int dimX,const int  dimY,const int dimZ)
   {
-    ///init.
+    ///scan init.
     this->assign(dimZ,width,height,dimX,dimY);
     cimglist_for((*this),Z) (*this)(Z).fill(-1);
     flag.assign(dimX,dimY,dimZ);
     flag=0;
     fail.assign(dimX,dimY,dimZ);
     fail=0;
+    ///full image init.
+    full_image_size.assign(2);
+    full_image_size=-1;
+    ROI_origin.assign(2);
+    ROI_origin=-1;
+    full_image_maximum.assign(2);
+    full_image_maximum=-1;
     ///temporary init.
     return tmp_initialise(width,height, dimX,dimY,dimZ);
   }//initialise
@@ -213,6 +227,10 @@ std::cerr<<this->class_name<<"::"<<__func__<<"("<<file_path<<")\n"<<std::flush;
     std::string axis_order="(";for(int i=0;i<this->dimension_name.size()-1;++i) axis_order+=this->dimension_name[i]+","; axis_order+=this->dimension_name[this->dimension_name.size()-1]+")";
     cimgListTest4D.pNCvar[0].add_att("maximum_position_order",axis_order.size(),axis_order.c_str());
     }//maximum position as attribute
+    {//full image informations as attribute
+    //image size
+    cimgListTest4D.pNCvar[0].add_att("full_image_size",this->full_image_size.width,&(this->full_image_size.data[0]));
+    }//full image informations as attribute
     cout << "CImgNetCDF::addNetCDFVar(" << file_path << ",...) return " 	<< cimgTest2D.addNetCDFVar(imgList3D[0],flag_name,flag_unit_name) << endl;
     cout << "CImgNetCDF::addNetCDFVar(" << file_path << ",...) return " 	<< cimgTest2Dx.addNetCDFVar(imgList3Dx[0],fail_name,fail_unit_name) << endl;
     ////data

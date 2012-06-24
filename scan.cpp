@@ -129,7 +129,7 @@ std::cerr<<"warning: no crop (in "<<__FILE__<<"/"<<__func__<<"function )\n"<<std
  }//done      end of grab images
   //compute mean image
 //! \todo [low] set data4scan type (factory) or add maximum and minimum variable within it
-  data4scan.normalise(i,j,k);//! \todo . add draw image in data4scan.normalise()
+  data4scan.normalise(i,j,k);
   //set flag
   data4scan.flag(i,j,k)=1;//satisfied
   return 0;
