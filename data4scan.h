@@ -26,6 +26,8 @@ public:
   Tvalue full_image_maximum;
   //! first full image maximum position
   cimg_library::CImg<int> full_image_maximum_position;//2C (x0,y0)
+  //! margin for ROI size (should be defined regarding to both spot size and full scanned area)
+  cimg_library::CImg<int> margin;//2C (dx,dy)
 #ifdef cimg_use_netcdf
   //! flag and fail information:
   std::string flag_name;
@@ -86,7 +88,7 @@ std::cerr<<"hop(0)="<<hop(0)<<" hop(1)="<<hop(1)<<" hop(2)="<<hop(2)<<"\n"<<std:
   }//initialise
 
   //! assign and fill
-  bool initialise(const int width,const int height,const int dimX,const int  dimY,const int dimZ)
+  bool initialise(const int width,const int height,const int dimX,const int  dimY,const int dimZ/*,const margin and scanned_area*/)
   {
     ///scan init.
     this->assign(dimZ,width,height,dimX,dimY);
@@ -100,12 +102,45 @@ std::cerr<<"hop(0)="<<hop(0)<<" hop(1)="<<hop(1)<<" hop(2)="<<hop(2)<<"\n"<<std:
     full_image_size=-1;
     ROI_origin.assign(2);
     ROI_origin=-1;
+    margin.assign(2);
+    margin=32;//! \todo set margin from default or user defined.
     full_image_maximum=-99;
     full_image_maximum_position.assign(2);
     full_image_maximum_position=-1;
     ///temporary init.
     return tmp_initialise(width,height, dimX,dimY,dimZ);
   }//initialise
+//  bool initialise(const CImg<int> &margin_pixel,const CImg<int> &scan_area_pixel,const int dimX,const int  dimY,const int dimZ)
+//  bool initialise(const CImg<int> &margin_pixel,const CImg<int> &scan_area,int M,const int dimX,const int  dimY,const int dimZ)
+
+  //! add sample data contribution to statistics
+  // \see normalise
+  bool set_first_full_image_information(cimg_library::CImg<int> &full_image,const int i=0,const int j=0,const int k=0)
+  {
+    if(i!=0||j!=0||k!=0) return false;
+    ///full image size
+    full_image_size(0)=full_image.width;
+    full_image_size(1)=full_image.height;
+    ///full image maximum
+    CImg<> stat;
+    stat=full_image.get_stats();
+full_image.print("full_image");
+stat.print("full_image stat");
+    int x,y,z,v;
+    if( !full_image.contains(full_image.data[(int)stat(5)],x,y,z,v) )//set (x,y)
+    {
+      full_image_maximum=cimg::type<Tvalue>::min();//absolute minimum value for the type
+      full_image_maximum_position=-1;//dummy values
+      ROI_origin=-1;
+      return false;
+    }
+    full_image_maximum=stat(1);
+    full_image_maximum_position(0)=x;
+    full_image_maximum_position(1)=y;
+    ///ROI rectangle
+    ROI_origin(0)=x-margin(0);
+    ROI_origin(1)=y-margin(1);
+  }//set_first_full_image_information
 
   //! add sample data contribution to statistics
   // \see normalise
@@ -233,6 +268,7 @@ std::cerr<<this->class_name<<"::"<<__func__<<"("<<file_path<<")\n"<<std::flush;
     std::string axis_order="(";for(int i=0;i<this->dimension_name.size()-1;++i) axis_order+=this->dimension_name[i]+","; axis_order+=this->dimension_name[this->dimension_name.size()-1]+")";
     cimgListTest4D.pNCvar[0].add_att("maximum_position_order",axis_order.size(),axis_order.c_str());
     }//maximum position as attribute
+    if( (full_image_size(0)!=(*this)[0].width)||(full_image_size(1)!=(*this)[0].height) )
     {//full image informations as attribute
     //image size
     cimgListTest4D.pNCvar[0].add_att("full_image_size",this->full_image_size.width,&(this->full_image_size.data[0]));
@@ -246,7 +282,7 @@ std::cerr<<this->class_name<<"::"<<__func__<<"("<<file_path<<")\n"<<std::flush;
     cimgListTest4D.pNCvar[0].add_att("first_full_image_maximum_position_unit",5,"pixel");
     //ROI
     cimg_library::CImg<int> ROI_rectangle;//4C (x0,y0,x1,y1)
-    ROI_rectangle=CImg<int>::vector(ROI_origin(0),ROI_origin(1),(*this)[0].width-ROI_origin(0)-1,(*this)[0].height-ROI_origin(1)-1);
+    ROI_rectangle=CImg<int>::vector(ROI_origin(0),ROI_origin(1),(*this)[0].width+ROI_origin(0)-1,(*this)[0].height+ROI_origin(1)-1);
     cimgListTest4D.pNCvar[0].add_att("region_of_interest_rectangle",ROI_rectangle.height,&(ROI_rectangle.data[0]));
     cimgListTest4D.pNCvar[0].add_att("region_of_interest_rectangle_unit",5,"pixel");
     //ROI coordinate order

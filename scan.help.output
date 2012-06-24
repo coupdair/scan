@@ -4,12 +4,12 @@
  usage: ./stepper -h -I
         ./stepper -nx 10 -sx 1 -vx 1000 --device-type uControlXYZ
  version: v0.1.8
- compilation date:  (Jun 24 2012, 21:40:27)
+ compilation date:  (Jun 24 2012, 22:39:17)
 
     --help   = true         : help (or -h option)
     --info   = true         : show compilation options (or -I option)
 
- CImg Library 1.25, compiled Jun 24 2012 ( 21:40:27 ) with the following flags :
+ CImg Library 1.25, compiled Jun 24 2012 ( 22:39:17 ) with the following flags :
 
   > CPU endianness :         Little Endian
   > Operating System :       Unix          ('cimg_OS'=1)

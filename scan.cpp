@@ -118,14 +118,17 @@ bool image_file_name(std::string &file_name,const std::string &file_path_format,
 int record_images(Cgrab &grab,cimg_library::CImg<int> &image,const std::string &ImagePath,const int ImageNumber,const int i,const int j,const int k,Cdata4scan<float,int> &data4scan)
 {
   std::string file;
-  cimg_library::CImg<float> mean;mean=image;mean.fill(0);
   for(int l=0;l<ImageNumber;++l)
   {//do
     image_file_name(file,ImagePath,i,j,k,l);
 std::cerr<<"file=\""<<file<<"\"\n"<<std::flush;
     if(!grab.grab(image,file)) return 1;
+    if(l==0&&i==0&&j==0&&k==0)
+    {//set first full image information
+      data4scan.set_first_full_image_information(image);
+    }//first full image
+std::cerr<<"warning: no crop (in "<<__FILE__<<"/"<<__func__<<"function )\n"<<std::flush;//! \todo set crop value from data4scan width and height (i.e. make a crop_sample function AND call it here)
     data4scan.add_sample(image,i,j,k);
-std::cerr<<"warning: no crop (in "<<__FILE__<<"/"<<__func__<<"function )\n"<<std::flush;
  }//done      end of grab images
   //compute mean image
 //! \todo [low] set data4scan type (factory) or add maximum and minimum variable within it
