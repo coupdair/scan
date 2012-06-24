@@ -88,7 +88,16 @@ std::cerr<<"hop(0)="<<hop(0)<<" hop(1)="<<hop(1)<<" hop(2)="<<hop(2)<<"\n"<<std:
   }//initialise
 
   //! assign and fill
-  bool initialise(const int width,const int height,const int dimX,const int  dimY,const int dimZ/*,const margin and scanned_area*/)
+  /**
+   * \param [in] width:  size of croppped image along x axis, i.e. cropped image width  = ROI (e.g. 48 pixel).
+   * \param [in] height: size of croppped image along y axis, i.e. cropped image height = ROI (e.g. 48 pixel).
+   * \param [in] dim_X: number of position along X axis, i.e. scan size along X (e.g. 12 positions).
+   * \param [in] dim_Y: number of position along Y axis, i.e. scan size along Y (e.g. 12 positions).
+   * \param [in] dim_Z: number of position along Z axis, i.e. scan size along Z (e.g.  1 positions for part of a chip scan).
+   * \param [in] margin_x: margin for x direction for ROI regarding to maximum in first image (e.g. 16 pixel).
+   * \param [in] margin_y: margin for y direction for ROI regarding to maximum in first image (e.g. 16 pixel).
+  **/
+  bool initialise(const int width,const int height,const int dimX,const int dimY,const int dimZ, const int margin_x=32,const int margin_y=32)
   {
     ///scan init.
     this->assign(dimZ,width,height,dimX,dimY);
@@ -103,18 +112,49 @@ std::cerr<<"hop(0)="<<hop(0)<<" hop(1)="<<hop(1)<<" hop(2)="<<hop(2)<<"\n"<<std:
     ROI_origin.assign(2);
     ROI_origin=-1;
     margin.assign(2);
-    margin=32;//! \todo set margin from default or user defined.
+    margin(0)=margin_x;
+    margin(1)=margin_y;
     full_image_maximum=-99;
     full_image_maximum_position.assign(2);
     full_image_maximum_position=-1;
     ///temporary init.
     return tmp_initialise(width,height, dimX,dimY,dimZ);
   }//initialise
-//  bool initialise(const CImg<int> &margin_pixel,const CImg<int> &scan_area_pixel,const int dimX,const int  dimY,const int dimZ)
-//  bool initialise(const CImg<int> &margin_pixel,const CImg<int> &scan_area,int M,const int dimX,const int  dimY,const int dimZ)
+  //! assign and fill using both margin and scan area in pixel
+  /**
+   * set data size (and filled with default values) for a rectangular area (of \c scan_area_pixel) serounded by a margin (i.e. scan area in the middle of a margin band; e.g. square area of 36x36 pixel)
+   * \param [in] margin_pixel: margin for both x and y directions for ROI regarding to maximum in first image (e.g. (32,32) pixel).
+   * \param [in] scan_area_pixel: effective scanned area in pixel (e.g. (4,4) pixel for a 3 step/pixel chip).
+   * \param [in] dim_X: number of position along X axis, i.e. scan size along X (e.g. 12 positions).
+   * \param [in] dim_Y: number of position along Y axis, i.e. scan size along Y (e.g. 12 positions).
+   * \param [in] dim_Z: number of position along Z axis, i.e. scan size along Z (e.g. 61 positions for a focus search).
+  **/
+  bool initialise(const CImg<int> &margin_pixel,const CImg<int> &scan_area_pixel,const int dimX,const int dimY,const int dimZ)
+  {//initialise
+    if(this->margin.size!=margin_pixel.size) return false;
+    if(this->margin.size!=scan_area_pixel.size) return false;
+    const int width= margin_pixel(0)*2+scan_area_pixel(0);
+    const int height=margin_pixel(1)*2+scan_area_pixel(1);
+    return initialise(width,height,dimX,dimY,dimZ,margin_pixel(0),margin_pixel(1));
+  }//initialise
+  //! assign and fill using both margin (in pixel) and pixel size (in meter/pixel)
+  /**
+   * set data size (and filled with default values) for a rectangular area (set with both pixel size and scan dimensions) serounded by a margin in pixel (i.e. scan area in the middle of a margin band; e.g. square area of 36x36 pixel)
+   * \param [in] margin_pixel: margin for both x and y directions for ROI (e.g. (32,32) pixel).
+   * \param [in] pixel_size: pixel size in step along both x and y axes (e.g. 3 steps/pixel).
+   * \param [in] dim_X: number of position along X axis, i.e. scan size along X (e.g. 12 positions, i.e. 12 steps).
+   * \param [in] dim_Y: number of position along Y axis, i.e. scan size along Y (e.g. 12 positions, i.e. 12 steps).
+   * \param [in] dim_Z: number of position along Z axis, i.e. scan size along Z (e.g. 61 positions for a focus search).
+  **/
+  bool initialise(const CImg<int> &margin_pixel,const CImg<float> &pixel_size, const int dimX,const int dimY,const int dimZ)
+  {//initialise
+    CImg<int> scan_area_pixel(2);
+    scan_area_pixel(0)=dimX/pixel_size;
+    scan_area_pixel(1)=dimY/pixel_size;
+    return initialise(margin_pixel,scan_area_pixel,dimX,dimY,dimZ);
+  }//initialise
 
-  //! add sample data contribution to statistics
-  // \see normalise
+  //! set information for first  full image to store in NetCDF (or information file, not implemented yet !)
   bool set_first_full_image_information(cimg_library::CImg<int> &full_image,const int i=0,const int j=0,const int k=0)
   {
     if(i!=0||j!=0||k!=0) return false;

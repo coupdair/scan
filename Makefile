@@ -1,7 +1,7 @@
 PROGRAMS = version lavision scan  
 DOCUMENTATIONS = doc
 
-version = v0.1.8
+version = v0.1.9
 version_cimg = 125
 #version_cimg = 149
 version_stepper=`cat ../stepper/VERSION`
