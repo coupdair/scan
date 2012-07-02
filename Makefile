@@ -4,11 +4,12 @@ DOCUMENTATIONS = doc
 version = v0.1.9
 version_cimg = 125
 #version_cimg = 149
+version_scan=${version}
 version_stepper=`cat ../stepper/VERSION`
 version_rs232=`cat ../rs232/VERSION`
 version_grab=`cat ../grab/VERSION`
 version_data=`cat ../convert/VERSION`
-OPT_LIBRARY = -DVERSION=\"$(version)\" -DDATA_VERSION=\"$(version_data)\" -DSTEPPER_VERSION=\"$(version_stepper)\"  -DGRAB_VERSION=\"$(version_grab)\"  -DRS232_VERSION=\"$(version_rs232)\" 
+OPT_LIBRARY = -DVERSION=\"$(version)\" -DSCAN_VERSION=\"$(version_scan)\" -DDATA_VERSION=\"$(version_data)\" -DSTEPPER_VERSION=\"$(version_stepper)\"  -DGRAB_VERSION=\"$(version_grab)\"  -DRS232_VERSION=\"$(version_rs232)\" 
 OPT_FORMAT = -Dcimg_use_jpeg -ljpeg -Dcimg_use_png -lpng -lz -Dcimg_use_tiff -ltiff -Dcimg_use_lavision -D_LINUX
 OPT_NETCDF = -Dcimg_use_netcdf -I../NetCDF/include/ -lnetcdf_c++ -L../NetCDF/lib/ -lnetcdf -I/usr/include/netcdf-3/
 OPT_XWINDOWS = -I/usr/X11R6/include -Dcimg_use_xshm -L/usr/X11R6/lib -lpthread -lX11 -lXext

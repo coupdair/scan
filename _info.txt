@@ -1,5 +1,7 @@
 clean; make && ./scan -h --device-path off_line -o ~/dataseb/AFDAR/cameraMTF/focus/image_x%02d_y%02d_z%02d_i%03d.jpg
 
+./scan --device-path off_line -o ~/dataseb/AFDAR/cameraMTF/focus/image_x%02d_y%02d_z%02d_i%03d.jpg -n 3 -nx 1 -ny 1 -nz 11
+
 #run
 ##one sample (i.e. first sample; mean on 1 Sample)
 ./scan --device-path off_line -o ~/dataseb/AFDAR/cameraMTF/focus/scanXYZ_sx1sy1sz1_00/image_x%02d_y%02d_z%02d_i%03d.jpg -nx 4 -ny 4 -nz 61 -n 1  -O ./meanFlagNFail.i000.xyXYZ.nc --wait-time 10 && ncdump -h ./meanFlagNFail.i000.xyXYZ.nc

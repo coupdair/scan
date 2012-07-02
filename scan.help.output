@@ -1,15 +1,15 @@
 
  scan : stepper program of the Laboratory of Mechanics in Lille (LML) is intended to make translation displacement using a stepping motor, it uses different GNU libraries (see --info option)
 
- usage: ./stepper -h -I
-        ./stepper -nx 10 -sx 1 -vx 1000 --device-type uControlXYZ
- version: v0.1.9	(other library versions: RS232.v0.3.1 stepper.v0.1.7 grab.v0.1.0)
- compilation date:  (Jul  2 2012, 12:00:55)
+ usage: ./scan -h -I
+        ./scan --device-path off_line -o ~/dataseb/AFDAR/cameraMTF/focus/image_x%02d_y%02d_z%02d_i%03d.jpg -n 3 -nx 1 -ny 1 -nz 11
+ version: v0.1.9	(other library versions: RS232.v0.3.1, stepper.v0.1.7, grab.v0.1.0)
+ compilation date:  (Jul  2 2012, 12:42:27)
 
     --help   = true         : help (or -h option)
     --info   = true         : show compilation options (or -I option)
 
- CImg Library 1.25, compiled Jul  2 2012 ( 12:00:55 ) with the following flags :
+ CImg Library 1.25, compiled Jul  2 2012 ( 12:42:27 ) with the following flags :
 
   > CPU endianness :         Little Endian
   > Operating System :       Unix          ('cimg_OS'=1)
@@ -29,14 +29,21 @@
   > Path of 'medcon' :       "medcon"      ('cimg_medcon_path' undefined)
   > Temporary path :         "/tmp"        ('cimg_temporary_path' undefined)
 
-    --device-path = 192.168.0.9  : path of grab device.
+    --grab-device-type = grab_WGet    : type of grab device (e.g. ArduinoTTL or grab_WGet or Elphel_OpenCV or Elphel_rtsp or grab_image_file).
+    --grab-device-path = 192.168.0.9  : path of grab device.
     -n       = 10           : number of images to acquire.
     -o       = ./image_x%02d_y%02d_z%02d_i%03d.jpg : path for image(s).
     -O       = ./meanFlagNFail.cimg : path for extracted data file (i.e. mean images, flag and fail).
-Cgrab::open("192.168.0.9")
-Cgrab::grab(CImg<int>,"./image_x00_y00_z00_i000.jpg")
-<CImgIOException>
-
-cimg::fopen() : File './image_x00_y00_z00_i000.jpg' cannot be opened for reading.
-
-terminate called after throwing an instance of 'cimg_library::CImgIOException'
+    --device-type = uControlXYZ  : Type of stepper device
+    --device-path = /dev/ttyUSB0 : Path of stepper device
+    --serial-type = serial_system : Type of serial device for stepper (i.e. serial_termios or serial_system)
+    -sx      = 10           : displacement step along X axis (e.g. -10 steps to go backward, i.e. displacement can be positive or negative).
+    -sy      = 10           : displacement step along Y axis.
+    -sz      = 1            : displacement step along Z axis.
+    -vx      = 1000         : displacement velocity along X axis (note: absolute  velocity, i.e. could not be negative).
+    -vy      = 1000         : displacement velocity along Y axis (note: absolute  velocity, i.e. could not be negative).
+    -vz      = 1000         : displacement velocity along X axis (note: absolute  velocity, i.e. could not be negative).
+    -nx      = 10           : number of displacement along X axis.
+    -ny      = 10           : number of displacement along Y axis.
+    -nz      = 1            : number of displacement along z axis.
+    --wait-time = 1000         : wait time between steps in ms.

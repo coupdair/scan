@@ -82,12 +82,8 @@ using namespace std;     // added by Dahi
 #include <sstream>
 ///////////////////////////////////////////  
 //CImg Library
-///data
-#include "data4scan.h"
-//stepper library
-#include "../stepper/stepper.h"
-//grab library
-#include "../grab/grab.h"
+///data, stepper, grab
+#include "scan.h"
 
 //! set numbered image file name from file path format
 /**
@@ -144,42 +140,23 @@ int main(int argc, char *argv[])
  ///usage
   cimg_usage(std::string("stepper program of the Laboratory of Mechanics in Lille (LML) is intended to make translation displacement using a stepping motor, \
 it uses different GNU libraries (see --info option)\n\n \
-usage: ./stepper -h -I\n \
-       ./stepper -nx 10 -sx 1 -vx 1000 --device-type uControlXYZ\n \
+usage: ./scan -h -I\n \
+       ./scan --device-path off_line -o ~/dataseb/AFDAR/cameraMTF/focus/image_x%02d_y%02d_z%02d_i%03d.jpg -n 3 -nx 1 -ny 1 -nz 11\n \
 version: "+std::string(VERSION)+"\t(other library versions: RS232."+std::string(RS232_VERSION)+", stepper."+std::string(STEPPER_VERSION)+", grab."+std::string(GRAB_VERSION)+")\n compilation date: " \
             ).c_str());//cimg_usage
-  ///information and help
+ ///information and help
   const bool show_h   =cimg_option("-h",    false,NULL);//-h hidden option
         bool show_help=cimg_option("--help",show_h,"help (or -h option)");show_help=show_h|show_help;//same --help or -h option
   bool show_info=cimg_option("-I",false,NULL);//-I hidden option
   if( cimg_option("--info",show_info,"show compilation options (or -I option)") ) {show_info=true;cimg_library::cimg::info();}//same --info or -I option
-////////////////////////added by Dahi////////////////////// start//////
  ///device camera
-//  const std::string DeviceType=cimg_option("--device-type","Elphel","type of grab device (e.g. ArduinoTTL or Elphel_wget or Elphel_OpenCV or Elphel_rtsp).");
-  const std::string CameraDevicePath=cimg_option("--device-path","192.168.0.9","path of grab device.");
+  const std::string CameraDeviceType=cimg_option("--grab-device-type","grab_WGet","type of grab device (e.g. ArduinoTTL or grab_WGet or Elphel_OpenCV or Elphel_rtsp or grab_image_file).");
+  const std::string CameraDevicePath=cimg_option("--grab-device-path","192.168.0.9","path of grab device.");
   ///image
   const int ImageNumber=cimg_option("-n",10,"number of images to acquire.");
   const std::string ImagePath=cimg_option("-o","./image_x%02d_y%02d_z%02d_i%03d.jpg","path for image(s).");
   const std::string  DataPath=cimg_option("-O","./meanFlagNFail.cimg","path for extracted data file (i.e. mean images, flag and fail).");
-  ///////const int         // this added by Dahi to see if the image name is changed or not
-//grab device object
-//! \todo [medium] put all grab after command line options.
-//! \todo [copy] need to do again grab factory (or set 	specific grab)
-  Cgrab grab;//[factory] static due to loss
-//open
-  if(!grab.open(CameraDevicePath/*,DeviceType*/)) return 1;
-//get
-  cimg_library::CImg<int> image;
-//! \todo [high] need to do again initialisation of image for its sizes and for maximum position in image.
-{//[remove] static due to loss
-std::string file;
-image_file_name(file,ImagePath,0,0,0,0);
-if(!grab.grab(image,file)) return 1;
-}//[remove] static due to loss
-////////////////////////end of camera device/////////////////////////////////
-
-///////////////////////////start stepper device/////////////////////////////
-  ///device
+ ///device stepper
 //! \bug [copy] need to do again stepperNreader for device command line options.
   const std::string DeviceType=cimg_option("--device-type","uControlXYZ","Type of stepper device");
   const std::string StepperDevicePath=cimg_option("--device-path","/dev/ttyUSB0","Path of stepper device");
@@ -218,6 +195,25 @@ const int step_z=cimg_option("-sz",1,"displacement step along Z axis.");
   const int wait_time=cimg_option("--wait-time",1000,"wait time between steps in ms.");
   ///stop if help requested
   if(show_help) {/*print_help(std::cerr);*/return 0;}
+
+
+//grab device object
+//! \todo [medium] put all grab after command line options.
+//! \todo [copy] . need to do again grab factory (or set 	specific grab)
+  Cgrab_factory grab_factory;
+  Cgrab *pGrab=grab_factory.create(CameraDeviceType);
+//open
+  if(!pGrab->open(CameraDevicePath)) return 1;
+//get
+  cimg_library::CImg<int> image;
+//! \todo [high] need to do again initialisation of image for its sizes and for maximum position in image.
+{//[remove] static due to loss
+std::string file;
+image_file_name(file,ImagePath,0,0,0,0);
+if(!pGrab->grab(image,file)) return 1;
+}//[remove] static due to loss
+
+
 //stepper device object
 //! \todo [high] need stepper factory
   Cstepper stepper;
@@ -255,7 +251,7 @@ for(int j=0;j<number(1);++j)
 //////////////////////////////////////////
 //  grab images
    //record_images(grab,image,ImagePath,ImageNumber,i,j,k);
-   record_images(grab,image,ImagePath,ImageNumber,i,j,k,data4scan);//update data4scan: mean and .flag
+   record_images(*pGrab,image,ImagePath,ImageNumber,i,j,k,data4scan);//update data4scan: mean and .flag
    map(i,j,k)=1;//satisfied                                   // added by Dahi
 //map.display("map (0=not,1=satisfied)");
 ////////////////////////////////////////
@@ -323,7 +319,7 @@ data4scan.flag.print("flag");
 data4scan.fail.print("fail");
 //CLOSE
   stepper.close();
-  grab.close();
+  pGrab->close();
   return 0;
 }//main
 

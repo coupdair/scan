@@ -2,7 +2,9 @@
 #define SCAN
 
 #include <sstream>
-#include "../stepper/stepper_factory.h"
+#include "../scan/data4scan.h"
+#include "../stepper/stepper.h"
+//#include "../stepper/stepper_factory.h"
 #include "../grab/grab_factory.h"
 
 //! make a full scanning
