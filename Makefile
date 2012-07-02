@@ -15,7 +15,8 @@ OPT_NETCDF = -Dcimg_use_netcdf -I../NetCDF/include/ -lnetcdf_c++ -L../NetCDF/lib
 OPT_XWINDOWS = -I/usr/X11R6/include -Dcimg_use_xshm -L/usr/X11R6/lib -lpthread -lX11 -lXext
 OPT = -Dcimg_display=0 -Dcimg_debug=2 $(OPT_LIBRARY) $(OPT_FORMAT) -Dversion_cimg=$(version_cimg) $(OPT_NETCDF)
 #OPT = -Dcimg_display=0 -Dcimg_debug=2 -Dcimg_use_vt100 $(OPT_LIBRARY) $(OPT_FORMAT) -Dversion_cimg=$(version_cimg) $(OPT_NETCDF)
-#OPT = $(OPT_XWINDOWS)  -Dcimg_debug=2 -Dcimg_use_vt100 $(OPT_LIBRARY) $(OPT_FORMAT) -Dversion_cimg=$(version_cimg) $(OPT_NETCDF)
+OPT = $(OPT_XWINDOWS) -Dcimg_display=1 -Dcimg_debug=2 $(OPT_LIBRARY) $(OPT_FORMAT) -Dversion_cimg=$(version_cimg) $(OPT_NETCDF)
+#OPT = $(OPT_XWINDOWS) -Dcimg_debug=2 -Dcimg_use_vt100 $(OPT_LIBRARY) $(OPT_FORMAT) -Dversion_cimg=$(version_cimg) $(OPT_NETCDF)
 
 CC = gcc
 CPP = g++

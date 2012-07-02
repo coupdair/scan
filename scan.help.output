@@ -4,18 +4,20 @@
  usage: ./scan -h -I
         ./scan --grab-device-path off_line -o ~/dataseb/AFDAR/cameraMTF/focus/image_x%02d_y%02d_z%02d_i%03d.jpg -n 3 -nx 1 -ny 1 -nz 11
  version: v0.1.9	(other library versions: RS232.v0.3.1, stepper.v0.1.7, grab.v0.1.0)
- compilation date:  (Jul  2 2012, 15:37:07)
+ compilation date:  (Jul  2 2012, 16:00:37)
 
     --help   = true         : help (or -h option)
     --info   = true         : show compilation options (or -I option)
 
- CImg Library 1.25, compiled Jul  2 2012 ( 15:37:07 ) with the following flags :
+ CImg Library 1.25, compiled Jul  2 2012 ( 16:00:37 ) with the following flags :
 
   > CPU endianness :         Little Endian
   > Operating System :       Unix          ('cimg_OS'=1)
-  > Display type :           No display    ('cimg_display_type'=0)
+  > Display type :           X11           ('cimg_display_type'=1)
   > Color terminal :         Yes           ('cimg_color_terminal' defined)
   > Debug messages :         Yes           ('cimg_debug'=2)
+  > Using XShm for X11 :     Yes           ('cimg_use_xshm' defined)
+  > Using XRand for X11 :    No            ('cimg_use_xrandr' undefined)
   > Using MPI library :      No            ('cimg_use_mpi' undefined)
   > Using NetCDF library :   Yes           ('cimg_use_netcdf' defined)
   > Using PNG library :      Yes           ('cimg_use_png' defined)
@@ -47,4 +49,6 @@
     -nx      = 10           : number of displacement along X axis.
     -ny      = 10           : number of displacement along Y axis.
     -nz      = 1            : number of displacement along z axis.
+    -X       = false        : activate GUI (i.e. progress display during scan mode only; set --scan true option).
+    --GUI-progress-zoom = 100          : GUI progress display zoom.
     --wait-time = 1000         : wait time between steps in ms.

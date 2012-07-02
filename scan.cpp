@@ -190,8 +190,8 @@ int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_
   if(do_display)
   {
 //! \todo assign both \c colume and \c progress for displaying at best an image (i.e. 2D)
-    colume.assign(volume.width(),volume.height(),1,3);
-    progress.assign(volume.width()*zoom,volume.height()*zoom);//,volume.depth()*zoom);
+    colume.assign(volume.width/*()*/,volume.height/*()*/,1,3);
+    progress.assign(volume.width/*()*/*zoom,volume.height/*()*/*zoom);//,volume.depth()*zoom);
     progress.set_title("scan progress");
   }
 #endif //cimg_display
@@ -209,7 +209,7 @@ int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_
     //current slice
       cimg_forXY(colume,x,y) colume.draw_point(x,y,blue);
 //! \todo remove slice in title if number(2)==1
-      progress.set_title("scan progress (slice#%d/%d)",k,number(2));
+      progress.set_title("#%d/%d: scan progress (slice#%d/%d)",k,number(2),k,number(2));
     }//do_display
 #endif //cimg_display
 
