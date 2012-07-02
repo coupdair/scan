@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
 it uses different GNU libraries (see --info option)\n\n \
 usage: ./stepper -h -I\n \
        ./stepper -nx 10 -sx 1 -vx 1000 --device-type uControlXYZ\n \
-version: "+std::string(VERSION)+"\n compilation date: " \
+version: "+std::string(VERSION)+"\t(other library versions: RS232."+std::string(RS232_VERSION)+", stepper."+std::string(STEPPER_VERSION)+", grab."+std::string(GRAB_VERSION)+")\n compilation date: " \
             ).c_str());//cimg_usage
   ///information and help
   const bool show_h   =cimg_option("-h",    false,NULL);//-h hidden option
