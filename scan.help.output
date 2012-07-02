@@ -2,14 +2,14 @@
  scan : stepper program of the Laboratory of Mechanics in Lille (LML) is intended to make translation displacement using a stepping motor, it uses different GNU libraries (see --info option)
 
  usage: ./scan -h -I
-        ./scan --device-path off_line -o ~/dataseb/AFDAR/cameraMTF/focus/image_x%02d_y%02d_z%02d_i%03d.jpg -n 3 -nx 1 -ny 1 -nz 11
+        ./scan --grab-device-path off_line -o ~/dataseb/AFDAR/cameraMTF/focus/image_x%02d_y%02d_z%02d_i%03d.jpg -n 3 -nx 1 -ny 1 -nz 11
  version: v0.1.9	(other library versions: RS232.v0.3.1, stepper.v0.1.7, grab.v0.1.0)
- compilation date:  (Jul  2 2012, 12:42:27)
+ compilation date:  (Jul  2 2012, 14:57:01)
 
     --help   = true         : help (or -h option)
     --info   = true         : show compilation options (or -I option)
 
- CImg Library 1.25, compiled Jul  2 2012 ( 12:42:27 ) with the following flags :
+ CImg Library 1.25, compiled Jul  2 2012 ( 14:57:01 ) with the following flags :
 
   > CPU endianness :         Little Endian
   > Operating System :       Unix          ('cimg_OS'=1)
@@ -34,9 +34,9 @@
     -n       = 10           : number of images to acquire.
     -o       = ./image_x%02d_y%02d_z%02d_i%03d.jpg : path for image(s).
     -O       = ./meanFlagNFail.cimg : path for extracted data file (i.e. mean images, flag and fail).
-    --device-type = uControlXYZ  : Type of stepper device
-    --device-path = /dev/ttyUSB0 : Path of stepper device
-    --serial-type = serial_system : Type of serial device for stepper (i.e. serial_termios or serial_system)
+    --stepper-device-type = uControlXYZ  : Type of stepper device
+    --stepper-device-path = /dev/ttyUSB0 : Path of stepper device
+    --stepper-device-serial-type = serial_system : Type of serial device for stepper (i.e. serial_termios or serial_system)
     -sx      = 10           : displacement step along X axis (e.g. -10 steps to go backward, i.e. displacement can be positive or negative).
     -sy      = 10           : displacement step along Y axis.
     -sz      = 1            : displacement step along Z axis.

@@ -1,7 +1,7 @@
-//stepper
+//scan
 /*-----------------------------------------------------------------------
-  File        : stepper.cpp
-  Description : stepper motor for translation displacement program of the Laboratory of Mechanics in Lille (LML)
+  File        : scan.cpp
+  Description : scanning with stepper motor for translation displacement program of the Laboratory of Mechanics in Lille (LML)
   Authors     : Sebastien COUDERT
 -----------------------------------------------------------------------*/
 
@@ -10,16 +10,16 @@
  *
  *  index:
  *  \li \ref sectionCommandLine
- *  \li \ref sectionStepperDocumentation
+ *  \li \ref sectionScanDocumentation
  *  \li \ref sectionDoxygenSyntax
  *
  *  \section sectionCommandLine command line options
  *
  *  \verbinclude "scan.help.output"
  *  
- *  \section sectionStepperDocumentation documentation outline
+ *  \section sectionScanDocumentation documentation outline
  *  This is the reference documentation of <a href="http://www.meol.cnrs.fr/">serial</a>, from the <a href="http://www.univ-lille1.fr/lml/">LML</a>.\n\n
- *  stepper software. The main function is in <a href="stepper_8cpp.html">stepper.cpp</a> source file.\n\n
+ *  stepper software. The main function is in <a href="scan_8cpp.html">scan.cpp</a> source file.\n\n
  *  This documentation has been automatically generated from the sources, 
  *  using the tool <a href="http://www.doxygen.org">doxygen</a>. It should be readed as HTML, LaTex and man page.\n
  *  It contains both
@@ -113,6 +113,7 @@ bool image_file_name(std::string &file_name,const std::string &file_path_format,
 **/
 int record_images(Cgrab &grab,cimg_library::CImg<int> &image,const std::string &ImagePath,const int ImageNumber,const int i,const int j,const int k,Cdata4scan<float,int> &data4scan)
 {
+//std::cerr<<__FILE__<<"/"<<__func__<<": grab type="<<grab.class_name<<".\n"<<std::flush;
   std::string file;
   for(int l=0;l<ImageNumber;++l)
   {//do
@@ -141,7 +142,7 @@ int main(int argc, char *argv[])
   cimg_usage(std::string("stepper program of the Laboratory of Mechanics in Lille (LML) is intended to make translation displacement using a stepping motor, \
 it uses different GNU libraries (see --info option)\n\n \
 usage: ./scan -h -I\n \
-       ./scan --device-path off_line -o ~/dataseb/AFDAR/cameraMTF/focus/image_x%02d_y%02d_z%02d_i%03d.jpg -n 3 -nx 1 -ny 1 -nz 11\n \
+       ./scan --grab-device-path off_line -o ~/dataseb/AFDAR/cameraMTF/focus/image_x%02d_y%02d_z%02d_i%03d.jpg -n 3 -nx 1 -ny 1 -nz 11\n \
 version: "+std::string(VERSION)+"\t(other library versions: RS232."+std::string(RS232_VERSION)+", stepper."+std::string(STEPPER_VERSION)+", grab."+std::string(GRAB_VERSION)+")\n compilation date: " \
             ).c_str());//cimg_usage
  ///information and help
@@ -158,9 +159,9 @@ version: "+std::string(VERSION)+"\t(other library versions: RS232."+std::string(
   const std::string  DataPath=cimg_option("-O","./meanFlagNFail.cimg","path for extracted data file (i.e. mean images, flag and fail).");
  ///device stepper
 //! \bug [copy] need to do again stepperNreader for device command line options.
-  const std::string DeviceType=cimg_option("--device-type","uControlXYZ","Type of stepper device");
-  const std::string StepperDevicePath=cimg_option("--device-path","/dev/ttyUSB0","Path of stepper device");
-  const std::string SerialType=cimg_option("--serial-type","serial_system","Type of serial device for stepper (i.e. serial_termios or serial_system)");
+  const std::string StepperDeviceType=cimg_option("--stepper-device-type","uControlXYZ","Type of stepper device");
+  const std::string StepperDevicePath=cimg_option("--stepper-device-path","/dev/ttyUSB0","Path of stepper device");
+  const std::string StepperDeviceSerialType=cimg_option("--stepper-device-serial-type","serial_system","Type of serial device for stepper (i.e. serial_termios or serial_system)");
   ///displacement
   cimg_library::CImg<int> step(3);step.fill(0);
   {
@@ -196,10 +197,7 @@ const int step_z=cimg_option("-sz",1,"displacement step along Z axis.");
   ///stop if help requested
   if(show_help) {/*print_help(std::cerr);*/return 0;}
 
-
 //grab device object
-//! \todo [medium] put all grab after command line options.
-//! \todo [copy] . need to do again grab factory (or set 	specific grab)
   Cgrab_factory grab_factory;
   Cgrab *pGrab=grab_factory.create(CameraDeviceType);
 //open
@@ -213,12 +211,11 @@ image_file_name(file,ImagePath,0,0,0,0);
 if(!pGrab->grab(image,file)) return 1;
 }//[remove] static due to loss
 
-
 //stepper device object
 //! \todo [high] need stepper factory
   Cstepper stepper;
 // OPEN 
-  if(!stepper.open(StepperDevicePath,SerialType)) return 1;
+  if(!stepper.open(StepperDevicePath,StepperDeviceSerialType)) return 1;
 // MOVE 
   std::cerr << "displacement along (X,Y,Z)=("<<number(0)*step(0)<<","<<0<<","<<0<<") steps at (vX,vY,vZ)=("<<velocity(0)<<","<<0<<","<<0<<") step(s) per second speed.\n"<<std::flush;
 /////////////////////////////////////////////////////////////
@@ -248,6 +245,7 @@ for(int j=0;j<number(1);++j)
   {//X move          (added)
    if(!stepper.move(stepx,velocity)) return 1;
     cimg_library::cimg::wait(wait_time);
+  }//X move     (added)
 //////////////////////////////////////////
 //  grab images
    //record_images(grab,image,ImagePath,ImageNumber,i,j,k);
@@ -255,7 +253,6 @@ for(int j=0;j<number(1);++j)
    map(i,j,k)=1;//satisfied                                   // added by Dahi
 //map.display("map (0=not,1=satisfied)");
 ////////////////////////////////////////
- }//X move     (added)
   }//X step loop
 //////////////////////////////////////////////////////////
   //go back to zero on X axis //move backward in X step
