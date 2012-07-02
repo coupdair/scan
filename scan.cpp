@@ -159,6 +159,8 @@ int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_
   cimg_library::CImg<int>  mj(3);
   cimg_forX(mj,a) mj(a)=((step(a)>0)?1:-1)*mechanical_jitter;
 
+///reset to (0,0,0): NOT for this function
+
 ///scanning message
   std::cerr<<"full scanning volume of "<<
  #ifdef cimg_use_vt100
@@ -441,104 +443,13 @@ if(!pGrab->grab(image,file)) return 1;
   Cdata4scan<float,int> data4scan;//mean,flag,fail (e.g. map)
   data4scan.initialise(image.width/*()*/,image.height/*()*/,number(0),number(1),number(2));
 
-{//scanning from stepper
 scanning(stepper,number,step,velocity,wait_time,
   mechanical_jitter
 #if cimg_display>0
   ,zoom,do_display
 #endif //cimg_display
   );//scanning
-}//scanning from stepper
-std::cerr<<"\n\n################# scanning done #################\n\n";
 
-{//scanning from stepper mofified by Dahi
- const int mj = 10;
-  cimg_library::CImg<int> map(number(0),number(1),number(2));   //added by Dahi
-map.fill(0);//not_satisfied
-/////////////////////////////////////////////////////////
-cimg_library::CImg<int> stepz(3);stepz.fill(0);stepz(2)=step(2);//e.g. (0,0,10) added stepz
-
-for(int k=0;k<number(2);++k)
-{
-cimg_library::CImg<int> stepy(3);stepy.fill(0);stepy(1)=step(1);//stepz(2)=step(2)//e.g. (0,-10,0) added stepz
-
-//////////////////////////////////////////////////////////
-for(int j=0;j<number(1);++j)
-{
-  cimg_library::CImg<int> stepx(3);stepx.fill(0);stepx(0)=step(0);//e.g. (10,0,0)
-  for(int i=0;i<number(0);++i)
-  {
-    std::cerr << "actual displacement along (X,Y,Z)=("<<i*step(0)<<","<<0<<","<<0<<") steps over entire displacement of ("<<number(0)*step(0)<<","<<0<<","<<0<<") steps.\n"<<std::flush;
-    
-  if(number(0)>1)  //(added)
-  {//X move          (added)
-   if(!stepper.move(stepx,velocity)) return 1;
-    cimg_library::cimg::wait(wait_time);
-  }//X move     (added)
-//////////////////////////////////////////
-//  grab images
-   //record_images(grab,image,ImagePath,ImageNumber,i,j,k);
-   record_images(*pGrab,image,ImagePath,ImageNumber,i,j,k,data4scan);//update data4scan: mean and .flag
-   map(i,j,k)=1;//satisfied                                   // added by Dahi
-//map.display("map (0=not,1=satisfied)");
-////////////////////////////////////////
-  }//X step loop
-//////////////////////////////////////////////////////////
-  //go back to zero on X axis //move backward in X step
-  if(number(0)>1)  //(added)
-{//X reset (with mechanical jitter)  (added)
-  // 1. move backward+mechaniocal jitter in X step // mechanical jitter = mj
- 
-  stepx(0)= - ((step(0) * number(0)) + mj);
-  if(!stepper.move(stepx,velocity)) return 1;
-
-  // 2. move forward mechanical jitter in X step
-  stepx(0)=  mj;
-  if(!stepper.move(stepx,velocity)) return 1;
-  cimg_library::cimg::wait(wait_time);
-
-}//X reset   (added)
-
-/////////////////////////////////////////////
-cimg_library::cimg::wait(wait_time);
-if(number(1)>1)  //(added)
-{//Y move          (added)
-  //Y move
-  if(!stepper.move(stepy,velocity)) return 1;
-}//Y move     (added)
-}//Y step loop
-
-
- if(number(1)>1)  //(added)
-{//Y reset (with mechanical jitter)  (added)
- // 1. move backward+mechaniocal jitter in Y step // mechanical jitter = mj
-
-  stepy(1)= - ((step(1) * number(1)) + mj);
-  if(!stepper.move(stepy,velocity)) return 1;
-
- // 2. move forward mechanical jitter in X step
-  stepy(1)=  mj;
-  if(!stepper.move(stepy,velocity)) return 1;
-}//Y reset   (added)
-
-//////////////////////////////////////////////////////////////////
-  if(number(2)>1)  //(added)
-  {//Z move          (added)
-    if(!stepper.move(stepz,velocity)) return 1;
-    cimg_library::cimg::wait(wait_time);
-  }//Z move     (added)
-}//Z step loop
-  if(number(2)>1)
-  {//Z reset (with mechanical jitter)  (added)
-   // 1. move backward+mechaniocal jitter in Z step // mechanical jitter = mj
-    stepz(2)= - ((step(2) * number(2)) + mj);
-    if(!stepper.move(stepz,velocity)) return 1;
-   // 2. move forward mechanical jitter in X step
-    stepz(2)=  mj;
-    if(!stepper.move(stepz,velocity)) return 1;
-  }//Z reset   (added)
-}//scanning from stepper mofified by Dahi
-  //////////////////////////////////////////////////////////////////
   data4scan.save(DataPath);//save processed data (e.g. mean images), flag (i.e. satisfied (or not) map) and fail (i.e. number of failing map).
 data4scan.print("mean");
 data4scan.flag.print("flag");
