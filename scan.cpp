@@ -135,6 +135,221 @@ std::cerr<<"warning: no crop (in "<<__FILE__<<"/"<<__func__<<"function )\n"<<std
   return 0;
 }//record_images
 
+//! scan a full volume, i.e. all positions of the volume (note: reset to original position with mechanical jitter)
+/**
+ * scan a volume, i.e. make all displacement along the 3 axes to do each position in the volume.
+ * \note reset to original position, especially in order to make 3D position scanning in each direction loop.
+ * \note could be used as 1D line, column or depth scanning for any axis scan, or even 2D plane or slice scanning.
+ *
+ * \param[in] stepper: displacement stage device (should be already open)
+ * \param[in] number: number of iteration in each of the scanning loops (i.e. number of positions for the 3 axes; size should be 3)
+ * \param[in] step: 3D displacement in step (i.e. size should be 3)
+ * \param[in] velocity: 3D velocity in step per second (i.e. size should be 3)
+ * \param[in] wait_time: minimum delay between each loop displacement
+ * \param[in] mechanical_jitter: mechanical jitter to perform a good reset for any axes
+**/
+int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_library::CImg<int> &step,const cimg_library::CImg<int> &velocity,const int wait_time, const unsigned int mechanical_jitter
+#if cimg_display>0
+,const unsigned int zoom=100,const bool do_display=false
+#endif //cimg_display
+)
+{
+///set signed mechanical jitter
+  //set mechanical jitter for all axes with same sign as corresponding displacement.
+  cimg_library::CImg<int>  mj(3);
+  cimg_forX(mj,a) mj(a)=((step(a)>0)?1:-1)*mechanical_jitter;
+
+///scanning message
+  std::cerr<<"full scanning volume of "<<
+ #ifdef cimg_use_vt100
+  cimg_library::cimg::t_purple<<
+ #endif
+  "size (sX,sY,sZ)=("<<number(0)*step(0)<<","<<number(1)*step(1)<<","<<number(2)*step(2)<<") steps"<<
+ #ifdef cimg_use_vt100
+  cimg_library::cimg::t_normal<<
+ #endif
+  " by "<<
+ #ifdef cimg_use_vt100
+  cimg_library::cimg::t_purple<<
+ #endif
+  "displacement (dX,dY,dZ)=("<<step(0)<<","<<step(1)<<","<<step(2)<<") steps"<<
+ #ifdef cimg_use_vt100
+  cimg_library::cimg::t_normal<<
+ #endif
+  " at (vX,vY,vZ)=("<<velocity(0)<<","<<velocity(1)<<","<<velocity(2)<<") step(s) per second speed.\n"<<std::flush;
+
+#if cimg_display>0
+  //GUI to display scanning progress
+  cimg_library::CImg<char> volume(number(0),number(1),number(2));volume.fill(2);//0=fail(red), 1=done(green), 2=to_do(blue)
+  //color
+//! \todo use \c volume for setting colors to \c colume (e.g. \c red color in case of position failure; need position check stepper)
+  const unsigned char red[] = { 255,0,0 }, green[] = { 0,255,0 }, blue[] = { 0,0,255 };
+  cimg_library::CImg<unsigned char> colume;
+  //display
+  cimg_library::CImgDisplay progress;
+  if(do_display)
+  {
+//! \todo assign both \c colume and \c progress for displaying at best an image (i.e. 2D)
+    colume.assign(volume.width(),volume.height(),1,3);
+    progress.assign(volume.width()*zoom,volume.height()*zoom);//,volume.depth()*zoom);
+    progress.set_title("scan progress");
+  }
+#endif //cimg_display
+
+///* Z axis loop
+  //set 1D displacement for Z axis
+  cimg_library::CImg<int> stepz(3);stepz.fill(0);stepz(2)=step(2);//e.g. (0,0,10)
+  //Z axis loop
+  for(int k=0;k<number(2);++k)
+  {
+
+#if cimg_display>0
+    if(do_display)
+    {
+    //current slice
+      cimg_forXY(colume,x,y) colume.draw_point(x,y,blue);
+//! \todo remove slice in title if number(2)==1
+      progress.set_title("scan progress (slice#%d/%d)",k,number(2));
+    }//do_display
+#endif //cimg_display
+
+///** Y axis loop
+    //set 1D displacement for Y axis
+    cimg_library::CImg<int> stepy(3);stepy.fill(0);stepy(1)=step(1);//e.g. (0,10,0)
+    //Y axis loop
+    for(int j=0;j<number(1);++j)
+    {
+///*** X axis loop
+      //set 1D displacement for X axis
+      cimg_library::CImg<int> stepx(3);stepx.fill(0);stepx(0)=step(0);//e.g. (10,0,0)
+      //X axis loop
+      for(int i=0;i<number(0);++i)
+      {
+///**** position message
+        std::cerr << "actual displacement to "<<
+       #ifdef cimg_use_vt100
+        cimg_library::cimg::t_green<<
+       #endif
+        "(X,Y,Z)=("<<i*step(0)<<","<<j*step(1)<<","<<k*step(2)<<") "<<
+       #ifdef cimg_use_vt100
+        cimg_library::cimg::t_normal<<
+       #endif
+        "step position over entire scanning of ("<<number(0)*step(0)<<","<<number(1)*step(1)<<","<<number(2)*step(2)<<") steps.\n"<<std::flush;
+#if cimg_display>0
+        //set status
+        volume(i,j,k)=1;
+        if(do_display)
+        {
+          //GUI to display scanning progress
+          colume.draw_point(i,j,green);
+          progress.display(colume.get_resize(zoom));
+        }//do_display
+#endif //cimg_display
+///**** move along X axis
+        //move along X axis
+        if(number(0)>1)
+        {//X move only if more than one line to do
+          if(!stepper.move(stepx,velocity)) return 1;
+        }//X move
+///**** wait a while for user
+        cimg_library::cimg::wait(wait_time);
+      }//X axis loop
+///*** reset X axis
+      //go back to zero on X axis (i.e. move backward along X axis)
+      if(number(0)>1)
+      {//X reset (with mechanical jitter)
+        // 0. reset message
+        std::cerr<<
+       #ifdef cimg_use_vt100
+        cimg_library::cimg::t_purple<<
+       #endif
+        "reset X axis to (X,Y,Z)=(0,"<<j*step(1)<<","<<k*step(2)<<")"<<
+       #ifdef cimg_use_vt100
+        cimg_library::cimg::t_normal<<
+       #endif
+        ".\n"<<std::flush;
+        // 1. move backward with mechanical jitter in X step // mechanical jitter = mj
+        stepx(0)=-(step(0)*number(0)+mj(0));
+        if(!stepper.move(stepx,velocity)) return 1;
+        cimg_library::cimg::wait(wait_time);
+        // 2. move forward mechanical jitter in X step
+        stepx(0)=mj(0);
+        if(!stepper.move(stepx,velocity)) return 1;
+        cimg_library::cimg::wait(wait_time);
+      }//X reset
+///*** move along Y axis
+      //move along Y axis
+      if(number(1)>1)
+      {//Y move only if more than one column to do
+        if(!stepper.move(stepy,velocity)) return 1;
+      }//Y move
+///*** wait a while for user
+      cimg_library::cimg::wait(wait_time);
+    }//Y axis loop
+///** reset Y axis
+    //go back to zero on Y axis (i.e. move backward along Y axis)
+    if(number(1)>1)
+    {//Y reset (with mechanical jitter)
+      // 0. reset message
+      std::cerr<<
+     #ifdef cimg_use_vt100
+      cimg_library::cimg::t_purple<<
+     #endif
+      "reset Y axis to (X,Y,Z)=(0,0,"<<k*step(2)<<")"<<
+     #ifdef cimg_use_vt100
+      cimg_library::cimg::t_normal<<
+     #endif
+      ".\n"<<std::flush;
+      // 1. move backward with mechanical jitter in Y step // mechanical jitter = mj
+      stepy(1)=-(step(1)*number(1)+mj(1));
+      if(!stepper.move(stepy,velocity)) return 1;
+      cimg_library::cimg::wait(wait_time);
+      // 2. move forward mechanical jitter in Y step
+      stepy(1)=mj(1);
+      if(!stepper.move(stepy,velocity)) return 1;
+      cimg_library::cimg::wait(wait_time);
+    }//Y reset
+///** move along Z axis
+    //move along Z axis
+    if(number(2)>1)
+    {//Z move only if more than one slice to do
+      if(!stepper.move(stepz,velocity)) return 1;
+    }//Z move
+///** wait a while for user
+    cimg_library::cimg::wait(wait_time);
+  }//Z axis loop
+///* reset Z axis
+  //go back to zero on Z axis (i.e. move backward along Z axis)
+  if(number(2)>1)
+  {//Z reset (with mechanical jitter)
+    // 0. reset message
+    std::cerr<<
+   #ifdef cimg_use_vt100
+    cimg_library::cimg::t_purple<<
+   #endif
+    "reset Z axis to (X,Y,Z)=(0,0,0)"<<
+   #ifdef cimg_use_vt100
+    cimg_library::cimg::t_normal<<
+   #endif
+    ".\n"<<std::flush;
+    // 1. move backward with mechanical jitter in Z step // mechanical jitter = mj
+    stepz(2)=-(step(2)*number(2)+mj(2));
+    if(!stepper.move(stepz,velocity)) return 1;
+    cimg_library::cimg::wait(wait_time);
+    // 2. move forward mechanical jitter in Z step
+    stepz(2)=mj(2);
+    if(!stepper.move(stepz,velocity)) return 1;
+    cimg_library::cimg::wait(wait_time);
+  }//Z reset
+
+#if cimg_display>0
+  //close GUI
+  progress.close();
+#endif //cimg_display
+
+  return 0;
+}//scanning
+
 int main(int argc, char *argv[])
 { 
 //commmand line options
@@ -155,6 +370,7 @@ version: "+std::string(VERSION)+"\t(other library versions: RS232."+std::string(
   const std::string CameraDevicePath=cimg_option("--grab-device-path","192.168.0.9","path of grab device.");
   ///image
   const int ImageNumber=cimg_option("-n",10,"number of images to acquire.");
+  const unsigned int mechanical_jitter=cimg_option("--jitter",10,"set mechanical jitter to go back to origin for scanning mode only (i.e. reset position with same mechanical direction, could not be negative).");
   const std::string ImagePath=cimg_option("-o","./image_x%02d_y%02d_z%02d_i%03d.jpg","path for image(s).");
   const std::string  DataPath=cimg_option("-O","./meanFlagNFail.cimg","path for extracted data file (i.e. mean images, flag and fail).");
  ///device stepper
@@ -192,6 +408,10 @@ const int step_z=cimg_option("-sz",1,"displacement step along Z axis.");
   const int number_z=cimg_option("-nz",1,"number of displacement along z axis.");
   number(2)=number_z;
   }
+#if cimg_display>0
+  const bool do_display=cimg_option("-X",false,"activate GUI (i.e. progress display during scan mode only; set --scan true option).");
+  const unsigned int zoom=cimg_option("--GUI-progress-zoom",100,"GUI progress display zoom.");
+#endif
   ///wait time between steps
   const int wait_time=cimg_option("--wait-time",1000,"wait time between steps in ms.");
   ///stop if help requested
@@ -216,16 +436,25 @@ if(!pGrab->grab(image,file)) return 1;
   Cstepper stepper;
 // OPEN 
   if(!stepper.open(StepperDevicePath,StepperDeviceSerialType)) return 1;
-// MOVE 
-  std::cerr << "displacement along (X,Y,Z)=("<<number(0)*step(0)<<","<<0<<","<<0<<") steps at (vX,vY,vZ)=("<<velocity(0)<<","<<0<<","<<0<<") step(s) per second speed.\n"<<std::flush;
-/////////////////////////////////////////////////////////////
 
+//next scanning object
+  Cdata4scan<float,int> data4scan;//mean,flag,fail (e.g. map)
+  data4scan.initialise(image.width/*()*/,image.height/*()*/,number(0),number(1),number(2));
+
+{//scanning from stepper
+scanning(stepper,number,step,velocity,wait_time,
+  mechanical_jitter
+#if cimg_display>0
+  ,zoom,do_display
+#endif //cimg_display
+  );//scanning
+}//scanning from stepper
+std::cerr<<"\n\n################# scanning done #################\n\n";
+
+{//scanning from stepper mofified by Dahi
  const int mj = 10;
   cimg_library::CImg<int> map(number(0),number(1),number(2));   //added by Dahi
 map.fill(0);//not_satisfied
-//! \todo [high] need stepper that is not moving/reading (so factory or set specific)
-  Cdata4scan<float,int> data4scan;//mean,flag,fail (e.g. map)
-  data4scan.initialise(image.width/*()*/,image.height/*()*/,number(0),number(1),number(2));
 /////////////////////////////////////////////////////////
 cimg_library::CImg<int> stepz(3);stepz.fill(0);stepz(2)=step(2);//e.g. (0,0,10) added stepz
 
@@ -308,12 +537,13 @@ if(number(1)>1)  //(added)
     stepz(2)=  mj;
     if(!stepper.move(stepz,velocity)) return 1;
   }//Z reset   (added)
-
+}//scanning from stepper mofified by Dahi
   //////////////////////////////////////////////////////////////////
   data4scan.save(DataPath);//save processed data (e.g. mean images), flag (i.e. satisfied (or not) map) and fail (i.e. number of failing map).
 data4scan.print("mean");
 data4scan.flag.print("flag");
 data4scan.fail.print("fail");
+
 //CLOSE
   stepper.close();
   pGrab->close();

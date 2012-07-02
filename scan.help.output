@@ -4,12 +4,12 @@
  usage: ./scan -h -I
         ./scan --grab-device-path off_line -o ~/dataseb/AFDAR/cameraMTF/focus/image_x%02d_y%02d_z%02d_i%03d.jpg -n 3 -nx 1 -ny 1 -nz 11
  version: v0.1.9	(other library versions: RS232.v0.3.1, stepper.v0.1.7, grab.v0.1.0)
- compilation date:  (Jul  2 2012, 14:57:01)
+ compilation date:  (Jul  2 2012, 15:37:07)
 
     --help   = true         : help (or -h option)
     --info   = true         : show compilation options (or -I option)
 
- CImg Library 1.25, compiled Jul  2 2012 ( 14:57:01 ) with the following flags :
+ CImg Library 1.25, compiled Jul  2 2012 ( 15:37:07 ) with the following flags :
 
   > CPU endianness :         Little Endian
   > Operating System :       Unix          ('cimg_OS'=1)
@@ -32,6 +32,7 @@
     --grab-device-type = grab_WGet    : type of grab device (e.g. ArduinoTTL or grab_WGet or Elphel_OpenCV or Elphel_rtsp or grab_image_file).
     --grab-device-path = 192.168.0.9  : path of grab device.
     -n       = 10           : number of images to acquire.
+    --jitter = 10           : set mechanical jitter to go back to origin for scanning mode only (i.e. reset position with same mechanical direction, could not be negative).
     -o       = ./image_x%02d_y%02d_z%02d_i%03d.jpg : path for image(s).
     -O       = ./meanFlagNFail.cimg : path for extracted data file (i.e. mean images, flag and fail).
     --stepper-device-type = uControlXYZ  : Type of stepper device
