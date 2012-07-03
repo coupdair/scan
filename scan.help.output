@@ -4,12 +4,12 @@
  usage: ./scan -h -I
         ./scan --grab-device-path off_line -o ~/dataseb/AFDAR/cameraMTF/focus/image_x%02d_y%02d_z%02d_i%03d.jpg -n 3 -nx 1 -ny 1 -nz 11
  version: v0.1.9	(other library versions: RS232.v0.3.1, stepper.v0.1.7, grab.v0.1.0)
- compilation date:  (Jul  3 2012, 14:29:58)
+ compilation date:  (Jul  3 2012, 15:07:46)
 
     --help           true                     help (or -h option)
     --info           true                     show compilation options (or -I option)
 
- CImg Library 1.4.9, compiled Jul  3 2012 ( 14:29:58 ) with the following flags :
+ CImg Library 1.4.9, compiled Jul  3 2012 ( 15:07:46 ) with the following flags :
 
   > Operating System :       Unix          ('cimg_OS'=1)
   > CPU endianness :         Little Endian
