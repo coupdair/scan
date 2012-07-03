@@ -81,7 +81,7 @@ std::cerr<<this->class_name<<"::"<<__func__<<"()\n"<<std::flush;
     tmp_count=0;
     tmp_mean.assign(width,height);
     tmp_mean=0.0;
-CImg<Tmap> hop=CImg<Tmap>::vector(1,2,3);
+cimg_library::CImg<Tmap> hop=cimg_library::CImg<Tmap>::vector(1,2,3);
 hop.print("vector");
 std::cerr<<"hop(0)="<<hop(0)<<" hop(1)="<<hop(1)<<" hop(2)="<<hop(2)<<"\n"<<std::flush;
     return true;
@@ -129,7 +129,7 @@ std::cerr<<"hop(0)="<<hop(0)<<" hop(1)="<<hop(1)<<" hop(2)="<<hop(2)<<"\n"<<std:
    * \param [in] dim_Y: number of position along Y axis, i.e. scan size along Y (e.g. 12 positions).
    * \param [in] dim_Z: number of position along Z axis, i.e. scan size along Z (e.g. 61 positions for a focus search).
   **/
-  bool initialise(const CImg<int> &margin_pixel,const CImg<int> &scan_area_pixel,const int dimX,const int dimY,const int dimZ)
+  bool initialise(const cimg_library::CImg<int> &margin_pixel,const cimg_library::CImg<int> &scan_area_pixel,const int dimX,const int dimY,const int dimZ)
   {//initialise
     if(this->margin.size!=margin_pixel.size) return false;
     if(this->margin.size!=scan_area_pixel.size) return false;
@@ -146,9 +146,9 @@ std::cerr<<"hop(0)="<<hop(0)<<" hop(1)="<<hop(1)<<" hop(2)="<<hop(2)<<"\n"<<std:
    * \param [in] dim_Y: number of position along Y axis, i.e. scan size along Y (e.g. 12 positions, i.e. 12 steps).
    * \param [in] dim_Z: number of position along Z axis, i.e. scan size along Z (e.g. 61 positions for a focus search).
   **/
-  bool initialise(const CImg<int> &margin_pixel,const CImg<float> &pixel_size, const int dimX,const int dimY,const int dimZ)
+  bool initialise(const cimg_library::CImg<int> &margin_pixel,const cimg_library::CImg<float> &pixel_size, const int dimX,const int dimY,const int dimZ)
   {//initialise
-    CImg<int> scan_area_pixel(2);
+    cimg_library::CImg<int> scan_area_pixel(2);
     scan_area_pixel(0)=dimX/pixel_size;
     scan_area_pixel(1)=dimY/pixel_size;
     return initialise(margin_pixel,scan_area_pixel,dimX,dimY,dimZ);
@@ -159,17 +159,26 @@ std::cerr<<"hop(0)="<<hop(0)<<" hop(1)="<<hop(1)<<" hop(2)="<<hop(2)<<"\n"<<std:
   {
     if(i!=0||j!=0||k!=0) return false;
     ///full image size
+#if version_cimg < 130
     full_image_size(0)=full_image.width;
     full_image_size(1)=full_image.height;
+#else
+    full_image_size(0)=full_image.width();
+    full_image_size(1)=full_image.height();
+#endif
     ///full image maximum
-    CImg<> stat;
+    cimg_library::CImg<> stat;
     stat=full_image.get_stats();
 full_image.print("full_image");
 stat.print("full_image stat");
     int x,y,z,v;
+#if version_cimg < 130
     if( !full_image.contains(full_image.data[(int)stat(5)],x,y,z,v) )//set (x,y)
+#else
+    if( !full_image.contains(full_image.offset((int)stat(5)),x,y,z,v) )//set (x,y)
+#endif
     {
-      full_image_maximum=cimg::type<Tvalue>::min();//absolute minimum value for the type
+      full_image_maximum=cimg_library::cimg::type<Tvalue>::min();//absolute minimum value for the type
       full_image_maximum_position=-1;//dummy values
       ROI_origin=-1;
       return false;
@@ -200,7 +209,11 @@ stat.print("full_image stat");
     if(tmp_count<1) return false;
 //! \todo [high] do inplace add for mean
     tmp_mean/=tmp_count;
+#if version_cimg < 130
     ((*this)(k)).draw_image(tmp_mean,0,0,i,j);
+#else
+    ((*this)(k)).draw_image(0,0,i,j,tmp_mean);
+#endif
     //reset mean for a next sum (e.g. setup following usage).
     tmp_mean=0.0;tmp_count=0;
     return true;
@@ -214,7 +227,7 @@ stat.print("full_image stat");
   {
     Tvalue max;
     //get stat for the 4D container
-    CImgList<> stat(this->size);
+    cimg_library::CImgList<> stat(this->size);
     cimglist_for((*this),l)
     {
       stat[l]=(*this)[l].get_stats();
@@ -226,14 +239,14 @@ stat.print("full_image stat");
     //get max for the 5D container
     ///get Z max position and its value
     int Zmax=-1;
-    max=cimg::type<Tvalue>::min();
+    max=cimg_library::cimg::type<Tvalue>::min();
     cimglist_for(stat,l) if( stat[l](1)>max ) {max=stat[l](1);Zmax=l;}//max for each CImg from list
     ///set (x,y,X,Y,Z) max position
     Z=Zmax;//set (l) i.e. (Z)
     if( !((*this)[Zmax].contains((*this)[Zmax].data[(int)stat[Zmax](5)],x,y,X,Y)) )//set (x,y,z,v) i.e. (x,y,X,Y)
     {
       x=y=X=Y=-1;//dummy values
-      return cimg::type<Tvalue>::min();//absolute minimum value for the type
+      return cimg_library::cimg::type<Tvalue>::min();//absolute minimum value for the type
     }
 std::cerr<<"max="<<max<<"@(x,y,X,Y,Z)=("<<x<<","<<y<<","<<X<<","<<Y<<","<<Z<<")\n"<<std::flush;
     return max;
@@ -242,7 +255,7 @@ std::cerr<<"max="<<max<<"@(x,y,X,Y,Z)=("<<x<<","<<y<<","<<X<<","<<Y<<","<<Z<<")\
   /**
    * return maximum value
   **/
-  Tvalue maximum(CImg<int> &pos)
+  Tvalue maximum(cimg_library::CImg<int> &pos)
   {
     return maximum(pos(0),pos(1),pos(2),pos(3),pos(4));
   }//maximum
@@ -271,11 +284,11 @@ std::cerr<<this->class_name<<"::"<<__func__<<"("<<file_path<<")\n"<<std::flush;
     ///for data: xyXY(Z)
     CImgNetCDF<Tvalue> cimgListTest4D;
     ///for flag: XY(Z), same size list
-    CImgList<Tmap> imgList3D(flag.depth);
+    cimg_library::CImgList<Tmap> imgList3D(flag.depth);
     CImgNetCDF<Tmap> cimgTest2D;
     cimglist_for(imgList3D,Z) imgList3D(Z)=flag.get_shared_plane(Z);
     ///for fail: XY(Z), same size list
-    CImgList<Tmap> imgList3Dx(fail.depth);
+    cimg_library::CImgList<Tmap> imgList3Dx(fail.depth);
     CImgNetCDF<Tmap> cimgTest2Dx;
     cimglist_for(imgList3Dx,Z) imgList3Dx(Z)=fail.get_shared_plane(Z);
 //(*this).print("5D");

@@ -192,8 +192,13 @@ int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_
   if(do_display)
   {
 //! \todo assign both \c colume and \c progress for displaying at best an image (i.e. 2D)
-    colume.assign(volume.width/*()*/,volume.height/*()*/,1,3);
-    progress.assign(volume.width/*()*/*zoom,volume.height/*()*/*zoom);//,volume.depth()*zoom);
+#if version_cimg < 130
+    colume.assign(volume.width  ,volume.height,1,3);
+    progress.assign(volume.width  *zoom,volume.height  *zoom);//,volume.depth()*zoom);
+#else
+    colume.assign(volume.width(),volume.height(),1,3);
+    progress.assign(volume.width()*zoom,volume.height()*zoom);//,volume.depth()*zoom);
+#endif
     progress.set_title("scan progress");
   }
 #endif //cimg_display
@@ -441,8 +446,11 @@ if(!pGrab->grab(image,file)) return 1;
 
 //next scanning object
   Cdata4scan<float,int> data4scan;//mean,flag,fail (e.g. map)
-  data4scan.initialise(image.width/*()*/,image.height/*()*/,number(0),number(1),number(2));
-
+#if version_cimg < 130
+  data4scan.initialise(image.width  ,image.height  ,number(0),number(1),number(2));
+#else
+  data4scan.initialise(image.width(),image.height(),number(0),number(1),number(2));
+#endif
 scanning(stepper,number,step,velocity,wait_time,
   mechanical_jitter
 #if cimg_display>0
