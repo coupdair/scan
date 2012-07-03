@@ -158,49 +158,26 @@ const int step_z=cimg_option("-sz",1,"displacement step along Z axis.");
 
 //scan device object
   Cscan<float,int> scan;
-
-//grab device object
-  Cgrab_factory grab_factory;
-  Cgrab *pGrab=grab_factory.create(CameraDeviceType);
-//open
-  if(!pGrab->open(CameraDevicePath)) return 1;
-//get
-  cimg_library::CImg<int> image;
-//! \todo [high] need to do again initialisation of image for its sizes and for maximum position in image.
-{//[remove] static due to loss
-std::string file;
-scan.image_file_name(file,ImagePath,0,0,0,0);
-if(!pGrab->grab(image,file)) return 1;
-}//[remove] static due to loss
-
-//stepper device object
-//! \todo [high] need stepper factory
-  Cstepper stepper;
-// OPEN 
-  if(!stepper.open(StepperDevicePath,StepperDeviceSerialType)) return 1;
-
-//next scanning object
-  Cdata4scan<float,int> data4scan;//mean,flag,fail (e.g. map)
-#if version_cimg < 130
-  data4scan.initialise(image.width  ,image.height  ,number(0),number(1),number(2));
-#else
-  data4scan.initialise(image.width(),image.height(),number(0),number(1),number(2));
-#endif
-  scan.scanning(stepper,number,step,velocity,wait_time,mechanical_jitter,
-    *pGrab,image,ImagePath,ImageNumber,data4scan
+  //init
+  scan.initialise(StepperDeviceType,StepperDevicePath,StepperDeviceSerialType,
+    CameraDeviceType,CameraDevicePath,ImagePath,
+    number);//margin);
+  //scan
+  scan.scanning(number,step,velocity,wait_time,mechanical_jitter,
+    ImagePath,ImageNumber
 #if cimg_display>0
     ,zoom,do_display
 #endif //cimg_display
     );//scanning
-
-  data4scan.save(DataPath);//save processed data (e.g. mean images), flag (i.e. satisfied (or not) map) and fail (i.e. number of failing map).
-data4scan.print("mean");
-data4scan.flag.print("flag");
-data4scan.fail.print("fail");
+  //save
+  scan.data4scan.save(DataPath);//save processed data (e.g. mean images), flag (i.e. satisfied (or not) map) and fail (i.e. number of failing map).
+scan.data4scan.print("mean");
+scan.data4scan.flag.print("flag");
+scan.data4scan.fail.print("fail");
 
 //CLOSE
-  stepper.close();
-  pGrab->close();
+  scan.stepper.close();
+  scan.pGrab->close();
   return 0;
 }//main
 

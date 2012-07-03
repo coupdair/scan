@@ -26,12 +26,15 @@ public:
 #endif
   //! class (or library) version for information only
   std::string class_version;
-private:
+//private:
   //! grab device
-
+  Cgrab *pGrab;
   //! stepper device
-
+  Cstepper stepper;
 public:
+  //! image data
+  Cdata4scan<Tvalue,Tmap> data4scan;//mean,flag,fail (e.g. map)
+
   //! constructor
   /**
    *
@@ -44,17 +47,52 @@ public:
     class_version=SCAN_VERSION;
   }//constructor
 
-//attributes:
-  Cgrab *pGrab;
-  Cstepper stepper;
-  Cdata4scan<Tvalue,Tmap> data4scan;//mean,flag,fail (e.g. map)
-
 //functions:
 ///image_file_name
 ///record_images
 ///scanning
 ////scanning_force
 ////scanning_lazy
+
+  //! assign and fill
+  /**
+   * \param [in] width:  size of croppped image along x axis, i.e. cropped image width  = ROI (e.g. 48 pixel).
+   * \param [in] dim_X: number of position along X axis, i.e. scan size along X (e.g. 12 positions).
+   * \param [in] margin_x: margin for x direction for ROI regarding to maximum in first image (e.g. 16 pixel).
+  **/
+  bool initialise(const std::string &StepperDeviceType,const std::string &StepperDevicePath,const std::string &StepperDeviceSerialType,
+    const std::string &CameraDeviceType,const std::string &CameraDevicePath,const std::string &ImagePath,
+    const cimg_library::CImg<int> number)
+  {
+    ///grab device object
+    Cgrab_factory grab_factory;
+    pGrab=grab_factory.create(CameraDeviceType);
+    //open
+    if(!pGrab->open(CameraDevicePath)) return false;
+    //get
+    cimg_library::CImg<int> image;
+    //! \todo [high] need to do again initialisation of image for its sizes and for maximum position in image.
+    {//[remove] static due to loss
+    std::string file;
+    this->image_file_name(file,ImagePath,0,0,0,0);
+    if(!pGrab->grab(image,file)) return false;
+    }//[remove] static due to loss
+
+    ///stepper device object
+    //! \todo [high] need stepper factory
+    //Cstepper_factory stepper_factory;
+    //pStepper=stepper_factory.create(StepperDeviceType);
+    //open 
+    if(!stepper.open(StepperDevicePath,StepperDeviceSerialType)) return false;
+
+    ///data object
+    #if version_cimg < 130
+    data4scan.initialise(image.width  ,image.height  ,number(0),number(1),number(2));
+    #else
+    data4scan.initialise(image.width(),image.height(),number(0),number(1),number(2));
+    #endif
+    return true;
+  }//initialise
 
 //! set numbered image file name from file path format
 /**
@@ -119,8 +157,8 @@ std::cerr<<"warning: no crop (in "<<__FILE__<<"/"<<__func__<<"function )\n"<<std
  * \param[in] wait_time: minimum delay between each loop displacement
  * \param[in] mechanical_jitter: mechanical jitter to perform a good reset for any axes
 **/
-int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_library::CImg<int> &step,const cimg_library::CImg<int> &velocity,const int wait_time, const unsigned int mechanical_jitter,
-  Cgrab &grab,cimg_library::CImg<int> &image,const std::string &ImagePath,const int ImageNumber,Cdata4scan<float,int> &data4scan
+int scanning_raw(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_library::CImg<int> &step,const cimg_library::CImg<int> &velocity,const int wait_time, const unsigned int mechanical_jitter,
+  Cgrab &grab,cimg_library::CImg<int> &image,const std::string &ImagePath,const int ImageNumber,Cdata4scan<Tvalue,Tmap> &data4scan
 #if cimg_display>0
   ,const unsigned int zoom=100,const bool do_display=false
 #endif //cimg_display
@@ -328,6 +366,37 @@ int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_
   progress.close();
 #endif //cimg_display
 
+  return 0;
+}//scanning_raw
+
+//! scan a full volume, i.e. all positions of the volume (note: reset to original position with mechanical jitter)
+/**
+ * scan a volume, i.e. make all displacement along the 3 axes to do each position in the volume.
+ * \note reset to original position, especially in order to make 3D position scanning in each direction loop.
+ * \note could be used as 1D line, column or depth scanning for any axis scan, or even 2D plane or slice scanning.
+ *
+ * \param[in] number: number of iteration in each of the scanning loops (i.e. number of positions for the 3 axes; size should be 3)
+ * \param[in] step: 3D displacement in step (i.e. size should be 3)
+ * \param[in] velocity: 3D velocity in step per second (i.e. size should be 3)
+ * \param[in] wait_time: minimum delay between each loop displacement
+ * \param[in] mechanical_jitter: mechanical jitter to perform a good reset for any axes
+**/
+int scanning(const cimg_library::CImg<int> &number,const cimg_library::CImg<int> &step,const cimg_library::CImg<int> &velocity,const int wait_time, const unsigned int mechanical_jitter,
+  const std::string &ImagePath,const int ImageNumber
+#if cimg_display>0
+  ,const unsigned int zoom=100,const bool do_display=false
+#endif //cimg_display
+)
+{
+  //init image size
+  cimg_library::CImg<int> image(data4scan[0].width(),data4scan[0].height());
+  //raw scan
+  scanning_raw(stepper,number,step,velocity,wait_time,mechanical_jitter,
+    *pGrab,image,ImagePath,ImageNumber,data4scan
+#if cimg_display>0
+    ,zoom,do_display
+#endif //cimg_display
+    );
   return 0;
 }//scanning
 
