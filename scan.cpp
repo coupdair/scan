@@ -157,7 +157,7 @@ const int step_z=cimg_option("-sz",1,"displacement step along Z axis.");
   if(show_help) {/*print_help(std::cerr);*/return 0;}
 
 //scan device object
-  Cscan scan;
+  Cscan<float,int> scan;
 
 //grab device object
   Cgrab_factory grab_factory;

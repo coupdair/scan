@@ -16,7 +16,7 @@
  * make displacements and record images.
  * note: embendding GUI for progress
 **/
-//template<typename Tvalue, typename Tmap>
+template<typename Tvalue, typename Tmap>
 class Cscan
 {
 public:
@@ -45,9 +45,9 @@ public:
   }//constructor
 
 //attributes:
-//grab
-//stepper
-//data
+  Cgrab *pGrab;
+  Cstepper stepper;
+  Cdata4scan<Tvalue,Tmap> data4scan;//mean,flag,fail (e.g. map)
 
 //functions:
 ///image_file_name
