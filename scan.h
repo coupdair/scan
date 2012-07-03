@@ -389,7 +389,11 @@ int scanning(const cimg_library::CImg<int> &number,const cimg_library::CImg<int>
 )
 {
   //init image size
+#if version_cimg < 130
+  cimg_library::CImg<int> image(data4scan[0].width  ,data4scan[0].height  );
+#else
   cimg_library::CImg<int> image(data4scan[0].width(),data4scan[0].height());
+#endif
   //raw scan
   scanning_raw(stepper,number,step,velocity,wait_time,mechanical_jitter,
     *pGrab,image,ImagePath,ImageNumber,data4scan
