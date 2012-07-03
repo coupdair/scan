@@ -305,6 +305,8 @@ std::cerr<<this->class_name<<"::"<<__func__<<"("<<file_path<<")\n"<<std::flush;
     cout << "CImgNetCDF::setNetCDFDims(" << file_path << ",...) return " 	<< cimgTest2Dx.setNetCDFDims(vpNCDim,cimgListTest4D.pNCDimt) << endl;
     ////var
     cout << "CImgNetCDF::addNetCDFVar(" << file_path << ",...) return " 	<< cimgListTest4D.addNetCDFVar((*this)[0],this->component_name[0],this->unit_name[0]) << endl;
+////intensity attribute{
+//! \todo put intensity attribute in a function (so it can be use either here (data+attribute) or for .cimg) in PURE NetCDF.
     {//maximum position as attribute
     CImg<int> max_position(5);max_position=-1;
     //maximum
@@ -338,6 +340,7 @@ std::cerr<<this->class_name<<"::"<<__func__<<"("<<file_path<<")\n"<<std::flush;
     std::string rectangle_order="("+this->dimension_name[0]+"0,"+this->dimension_name[1]+"0, "+this->dimension_name[0]+"1,"+this->dimension_name[1]+"1)";
     cimgListTest4D.pNCvar[0].add_att("region_of_interest_rectangle_order",rectangle_order.size(),rectangle_order.c_str());
     }//full image informations as attribute
+////}intensity attribute
     cout << "CImgNetCDF::addNetCDFVar(" << file_path << ",...) return " 	<< cimgTest2D.addNetCDFVar(imgList3D[0],flag_name,flag_unit_name) << endl;
     cout << "CImgNetCDF::addNetCDFVar(" << file_path << ",...) return " 	<< cimgTest2Dx.addNetCDFVar(imgList3Dx[0],fail_name,fail_unit_name) << endl;
     ////data

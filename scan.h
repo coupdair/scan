@@ -16,6 +16,7 @@
  * make displacements and record images.
  * note: embendding GUI for progress
 **/
+//template<typename Tvalue, typename Tmap>
 class Cscan
 {
 public:
@@ -119,7 +120,7 @@ std::cerr<<"warning: no crop (in "<<__FILE__<<"/"<<__func__<<"function )\n"<<std
  * \param[in] mechanical_jitter: mechanical jitter to perform a good reset for any axes
 **/
 int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_library::CImg<int> &step,const cimg_library::CImg<int> &velocity,const int wait_time, const unsigned int mechanical_jitter,
-  Cgrab &grab,cimg_library::CImg<int> &image,const std::string &ImagePath,const int ImageNumber
+  Cgrab &grab,cimg_library::CImg<int> &image,const std::string &ImagePath,const int ImageNumber,Cdata4scan<float,int> &data4scan
 #if cimg_display>0
   ,const unsigned int zoom=100,const bool do_display=false
 #endif //cimg_display
@@ -214,8 +215,7 @@ int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_
        #endif
         "step position over entire scanning of ("<<number(0)*step(0)<<","<<number(1)*step(1)<<","<<number(2)*step(2)<<") steps.\n"<<std::flush;
 ///**** grab
-//! \todo [high] add image grabbing.
-//        record_images(...);
+        record_images(grab,image,ImagePath,ImageNumber,i,j,k,data4scan);
 #if cimg_display>0
         //set status
         volume(i,j,k)=1;
