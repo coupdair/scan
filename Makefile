@@ -2,8 +2,8 @@ PROGRAMS = version lavision scan
 DOCUMENTATIONS = doc
 
 version = v0.1.9
-version_cimg = 125
-#version_cimg = 149
+#version_cimg = 125
+version_cimg = 149
 version_scan=${version}
 version_stepper=`cat ../stepper/VERSION`
 version_rs232=`cat ../rs232/VERSION`
@@ -15,10 +15,9 @@ OPT_NETCDF = -Dcimg_use_netcdf -I../NetCDF/include/ -lnetcdf_c++ -L../NetCDF/lib
 OPT_XWINDOWS = -I/usr/X11R6/include -Dcimg_use_xshm -L/usr/X11R6/lib -lpthread -lX11 -lXext
 OPT = -Dcimg_display=0 -Dcimg_debug=2 $(OPT_LIBRARY) $(OPT_FORMAT) -Dversion_cimg=$(version_cimg) $(OPT_NETCDF)
 ##CImg.v1.2.5
-OPT = $(OPT_XWINDOWS) -Dcimg_display=1 -Dcimg_debug=2 $(OPT_LIBRARY) $(OPT_FORMAT) -Dversion_cimg=$(version_cimg) $(OPT_NETCDF)
+#OPT = $(OPT_XWINDOWS) -Dcimg_display=1 -Dcimg_debug=2 $(OPT_LIBRARY) $(OPT_FORMAT) -Dversion_cimg=$(version_cimg) $(OPT_NETCDF)
 ##CImg.v1.4.9
-#OPT = $(OPT_XWINDOWS) -Dcimg_debug=2 -Dcimg_use_vt100 $(OPT_LIBRARY) $(OPT_FORMAT) -Dversion_cimg=$(version_cimg) $(OPT_NETCDF)
-#OPT = $(OPT_XWINDOWS) -Dcimg_debug=2 -Dcimg_use_vt100 $(OPT_LIBRARY) -Dversion_cimg=$(version_cimg)
+OPT = $(OPT_XWINDOWS) -Dcimg_debug=2 -Dcimg_use_vt100 $(OPT_LIBRARY) -Dversion_cimg=$(version_cimg)
 
 CC = gcc
 CPP = g++
@@ -29,8 +28,8 @@ prog:$(PROGRAMS)
 
 version: Makefile
 	echo ${version} > VERSION
-	cd ..; rm CImg; ln -s CImg-1.2.5 CImg; cd ./scan/
-#	cd ..; rm CImg; ln -s CImg-1.4.9 CImg; cd ./scan/
+#	cd ..; rm CImg; ln -s CImg-1.2.5 CImg; cd ./scan/
+	cd ..; rm CImg; ln -s CImg-1.4.9 CImg; cd ./scan/
 
 lavision: Makefile
 	cd ../LaVision/
