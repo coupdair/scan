@@ -54,45 +54,45 @@ public:
 ////scanning_force
 ////scanning_lazy
 
-  //! assign and fill
-  /**
-   * \param [in] width:  size of croppped image along x axis, i.e. cropped image width  = ROI (e.g. 48 pixel).
-   * \param [in] dim_X: number of position along X axis, i.e. scan size along X (e.g. 12 positions).
-   * \param [in] margin_x: margin for x direction for ROI regarding to maximum in first image (e.g. 16 pixel).
-  **/
-  bool initialise(const std::string &StepperDeviceType,const std::string &StepperDevicePath,const std::string &StepperDeviceSerialType,
-    const std::string &CameraDeviceType,const std::string &CameraDevicePath,const std::string &ImagePath,
-    const cimg_library::CImg<int> number)
-  {
-    ///grab device object
-    Cgrab_factory grab_factory;
-    pGrab=grab_factory.create(CameraDeviceType);
-    //open
-    if(!pGrab->open(CameraDevicePath)) return false;
-    //get
-    cimg_library::CImg<int> image;
-    //! \todo [high] need to do again initialisation of image for its sizes and for maximum position in image.
-    {//[remove] static due to loss
-    std::string file;
-    this->image_file_name(file,ImagePath,0,0,0,0);
-    if(!pGrab->grab(image,file)) return false;
-    }//[remove] static due to loss
+//! assign and fill
+/**
+ * \param [in] width:  size of croppped image along x axis, i.e. cropped image width  = ROI (e.g. 48 pixel).
+ * \param [in] dim_X: number of position along X axis, i.e. scan size along X (e.g. 12 positions).
+ * \param [in] margin_x: margin for x direction for ROI regarding to maximum in first image (e.g. 16 pixel).
+**/
+bool initialise(const std::string &StepperDeviceType,const std::string &StepperDevicePath,const std::string &StepperDeviceSerialType,
+  const std::string &CameraDeviceType,const std::string &CameraDevicePath,const std::string &ImagePath,
+  const cimg_library::CImg<int> number)
+{
+  ///grab device object
+  Cgrab_factory grab_factory;
+  pGrab=grab_factory.create(CameraDeviceType);
+  //open
+  if(!pGrab->open(CameraDevicePath)) return false;
+  //get
+  cimg_library::CImg<int> image;
+  //! \todo [high] need to do again initialisation of image for its sizes and for maximum position in image.
+  {//[remove] static due to loss
+  std::string file;
+  this->image_file_name(file,ImagePath,0,0,0,0);
+  if(!pGrab->grab(image,file)) return false;
+  }//[remove] static due to loss
 
-    ///stepper device object
-    //! \todo [high] need stepper factory
-    //Cstepper_factory stepper_factory;
-    //pStepper=stepper_factory.create(StepperDeviceType);
-    //open 
-    if(!stepper.open(StepperDevicePath,StepperDeviceSerialType)) return false;
+  ///stepper device object
+  //! \todo [high] need stepper factory
+  //Cstepper_factory stepper_factory;
+  //pStepper=stepper_factory.create(StepperDeviceType);
+  //open 
+  if(!stepper.open(StepperDevicePath,StepperDeviceSerialType)) return false;
 
-    ///data object
-    #if version_cimg < 130
-    data4scan.initialise(image.width  ,image.height  ,number(0),number(1),number(2));
-    #else
-    data4scan.initialise(image.width(),image.height(),number(0),number(1),number(2));
-    #endif
-    return true;
-  }//initialise
+  ///data object
+  #if version_cimg < 130
+  data4scan.initialise(image.width  ,image.height  ,number(0),number(1),number(2));
+  #else
+  data4scan.initialise(image.width(),image.height(),number(0),number(1),number(2));
+  #endif
+  return true;
+}//initialise
 
 //! set numbered image file name from file path format
 /**
@@ -399,6 +399,16 @@ int scanning(const cimg_library::CImg<int> &number,const cimg_library::CImg<int>
     );
   return 0;
 }//scanning
+
+//! close
+/**
+ * close both grab and stepper devices
+**/
+bool close()
+{
+  stepper.close();
+  pGrab->close();
+}//close
 
 };//Cscan class
 

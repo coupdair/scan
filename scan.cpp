@@ -174,10 +174,8 @@ const int step_z=cimg_option("-sz",1,"displacement step along Z axis.");
 scan.data4scan.print("mean");
 scan.data4scan.flag.print("flag");
 scan.data4scan.fail.print("fail");
-
-//CLOSE
-  scan.stepper.close();
-  scan.pGrab->close();
+  //close devices
+  scan.close();
   return 0;
 }//main
 
