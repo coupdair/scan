@@ -118,9 +118,10 @@ std::cerr<<"warning: no crop (in "<<__FILE__<<"/"<<__func__<<"function )\n"<<std
  * \param[in] wait_time: minimum delay between each loop displacement
  * \param[in] mechanical_jitter: mechanical jitter to perform a good reset for any axes
 **/
-int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_library::CImg<int> &step,const cimg_library::CImg<int> &velocity,const int wait_time, const unsigned int mechanical_jitter
+int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_library::CImg<int> &step,const cimg_library::CImg<int> &velocity,const int wait_time, const unsigned int mechanical_jitter,
+  Cgrab &grab,cimg_library::CImg<int> &image,const std::string &ImagePath,const int ImageNumber
 #if cimg_display>0
-,const unsigned int zoom=100,const bool do_display=false
+  ,const unsigned int zoom=100,const bool do_display=false
 #endif //cimg_display
 )
 {

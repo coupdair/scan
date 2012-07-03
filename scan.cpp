@@ -186,8 +186,8 @@ if(!pGrab->grab(image,file)) return 1;
 #else
   data4scan.initialise(image.width(),image.height(),number(0),number(1),number(2));
 #endif
-  scan.scanning(stepper,number,step,velocity,wait_time,
-    mechanical_jitter
+  scan.scanning(stepper,number,step,velocity,wait_time,mechanical_jitter,
+    *pGrab,image,ImagePath,ImageNumber
 #if cimg_display>0
     ,zoom,do_display
 #endif //cimg_display
