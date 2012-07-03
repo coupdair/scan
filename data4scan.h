@@ -172,11 +172,7 @@ std::cerr<<"hop(0)="<<hop(0)<<" hop(1)="<<hop(1)<<" hop(2)="<<hop(2)<<"\n"<<std:
 full_image.print("full_image");
 stat.print("full_image stat");
     int x,y,z,v;
-#if version_cimg < 130
-    if( !full_image.contains(full_image.data[(int)stat(5)],x,y,z,v) )//set (x,y)
-#else
     if( !full_image.contains(full_image.offset((int)stat(5)),x,y,z,v) )//set (x,y)
-#endif
     {
       full_image_maximum=cimg_library::cimg::type<Tvalue>::min();//absolute minimum value for the type
       full_image_maximum_position=-1;//dummy values
