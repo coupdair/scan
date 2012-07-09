@@ -3,8 +3,7 @@
 
 #include <sstream>
 #include "../scan/data4scan.h"
-#include "../stepper/stepper.h"
-//#include "../stepper/stepper_factory.h"
+#include "../stepper/stepper_factory.h"
 #include "../grab/grab_factory.h"
 
 //! make a full scanning
