@@ -109,7 +109,8 @@ version: "+std::string(VERSION)+"\t(other library versions: RS232."+std::string(
   const std::string CameraDevicePath=cimg_option("--grab-device-path","192.168.0.9","path of grab device.");
   ///image
   const int ImageNumber=cimg_option("-n",10,"number of images to acquire.");
-  const unsigned int mechanical_jitter=cimg_option("--jitter",10,"set mechanical jitter to go back to origin for scanning mode only (i.e. reset position with same mechanical direction, could not be negative).");
+  const unsigned int jitter=cimg_option("--jitter",10,"set mechanical jitter to go back to origin for scanning mode only (i.e. reset position with same mechanical direction, could not be negative).");
+  cimg_library::CImg<unsigned int> mechanical_jitter(3);mechanical_jitter=jitter;
   const std::string ImagePath=cimg_option("-o","./image_x%02d_y%02d_z%02d_i%03d.jpg","path for image(s).");
   const std::string  DataPath=cimg_option("-O","./meanFlagNFail.cimg","path for extracted data file (i.e. mean images, flag and fail).");
  ///device stepper
@@ -117,6 +118,8 @@ version: "+std::string(VERSION)+"\t(other library versions: RS232."+std::string(
   const std::string StepperDeviceType=cimg_option("--stepper-device-type","uControlXYZ","Type of stepper device");
   const std::string StepperDevicePath=cimg_option("--stepper-device-path","/dev/ttyUSB0","Path of stepper device");
   const std::string StepperDeviceSerialType=cimg_option("--stepper-device-serial-type","serial_system","Type of serial device for stepper (i.e. serial_termios or serial_system)");
+  const std::string StepperReaderDevicePath=cimg_option("--position-reader-device-path","/dev/ttyUSB1","path of position reader device"); 
+  const std::string StepperReaderDeviceSerialType=cimg_option("--position-reader-serial-type","serial_system","type of serial device for position reader (i.e. serial_termios or serial_system)"); 
   ///displacement
   cimg_library::CImg<int> step(3);step.fill(0);
   {
@@ -160,6 +163,7 @@ const int step_z=cimg_option("-sz",1,"displacement step along Z axis.");
   Cscan<float,int> scan;
   //init
   scan.initialise(StepperDeviceType,StepperDevicePath,StepperDeviceSerialType,
+    StepperReaderDevicePath,StepperReaderDeviceSerialType,mechanical_jitter,
     CameraDeviceType,CameraDevicePath,ImagePath,
     number);//margin);
   //scan

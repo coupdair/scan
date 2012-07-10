@@ -1,9 +1,9 @@
 clean; make && ./scan -h --device-path off_line -o ~/dataseb/AFDAR/cameraMTF/focus/image_x%02d_y%02d_z%02d_i%03d.jpg
 
 #focus
-./scan --grab-device-type grab_image_file -o ~/dataseb/AFDAR/cameraMTF/focus/image_x%02d_y%02d_z%02d_i%03d.jpg -n 1 -nx 1 -ny 1 -nz 11 --wait-time 10 -O meanFlagNFail.nc
+./scan --stepper-device-type fake --grab-device-type grab_image_file -o ~/dataseb/AFDAR/cameraMTF/focus/image_x%02d_y%02d_z%02d_i%03d.jpg -n 1 -nx 1 -ny 1 -nz 11 --wait-time 10 -O meanFlagNFail.nc
 #3D scan
-./scan --grab-device-type grab_image_file -o ~/dataseb/AFDAR/cameraMTF/focus/scanXYZ_sx1sy1sz1_00/image_x%02d_y%02d_z%02d_i%03d.jpg -n 1 -nx 4 -ny 4 -nz 11 --wait-time 50 -O meanFlagNFail.nc -X
+./scan --stepper-device-type fake --grab-device-type grab_image_file -o ~/dataseb/AFDAR/cameraMTF/focus/scanXYZ_sx1sy1sz1_00/image_x%02d_y%02d_z%02d_i%03d.jpg -n 1 -nx 4 -ny 4 -nz 11 --wait-time 50 -O meanFlagNFail.nc -X
 
 #run
 ##one sample (i.e. first sample; mean on 1 Sample)

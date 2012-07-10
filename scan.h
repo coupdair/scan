@@ -60,6 +60,7 @@ public:
  * \param [in] margin_x: margin for x direction for ROI regarding to maximum in first image (e.g. 16 pixel).
 **/
 bool initialise(const std::string &StepperDeviceType,const std::string &StepperDevicePath,const std::string &StepperDeviceSerialType,
+  const std::string &StepperReaderDevicePath,const std::string &StepperReaderDeviceSerialType,const cimg_library::CImg<unsigned int> &mechanical_jitter,
   const std::string &CameraDeviceType,const std::string &CameraDevicePath,const std::string &ImagePath,
   const cimg_library::CImg<int> number)
 {
@@ -82,7 +83,7 @@ bool initialise(const std::string &StepperDeviceType,const std::string &StepperD
   //Cstepper_factory stepper_factory;
   //pStepper=stepper_factory.create(StepperDeviceType);
   //open 
-  if(!stepper.open(StepperDevicePath,StepperDeviceSerialType)) return false;
+  if(!stepper.open(StepperDevicePath,StepperDeviceSerialType,StepperReaderDevicePath,StepperReaderDeviceSerialType,mechanical_jitter)) return false;
 
   ///data object
   #if version_cimg < 130
