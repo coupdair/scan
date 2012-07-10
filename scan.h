@@ -395,6 +395,7 @@ int scanning_force(Cstepper &stepper,const cimg_library::CImg<int> &number,const
   //set mechanical jitter for all axes with same sign as corresponding displacement.
   cimg_library::CImg<int>  mj(3);
   cimg_forX(mj,a) mj(a)=((step(a)>0)?1:-1)*mechanical_jitter;
+  stepper.mechanical_jitter=mechanical_jitter;
 
 ///reset to (0,0,0)
 //! \todo [high] add both reset and check absolute position in (0,0,0)
@@ -446,7 +447,6 @@ int scanning_force(Cstepper &stepper,const cimg_library::CImg<int> &number,const
   int kz;//absolute position along Z axis (e.g. k=kz if step=1 in Z direction)
   for(int k=0,kz=0;k<number(2);++k,kz+=step(2))
   {
-
 #if cimg_display>0
     if(do_display)
     {
@@ -456,6 +456,14 @@ int scanning_force(Cstepper &stepper,const cimg_library::CImg<int> &number,const
       progress.set_title("#%d/%d: scan progress (slice#%d/%d)",k,number(2),k,number(2));
     }//do_display
 #endif //cimg_display
+///** move along Z axis
+    //force move along Z axis
+    if(number(2)>1)
+    {//Z move only if more than one slice to do
+      if(!stepper.move(kz,velocity)) return 1;
+    }//Z move
+///** wait a while for user
+    cimg_library::cimg::wait(wait_time);
 
 ///** Y axis loop
     //set 1D displacement for Y axis
@@ -463,6 +471,14 @@ int scanning_force(Cstepper &stepper,const cimg_library::CImg<int> &number,const
     //Y axis loop
     for(int j=0,jy=0;j<number(1);++j,jy+=step(1))
     {
+///*** move along Y axis
+      //force move along Y axis
+      if(number(1)>1)
+      {//Y move only if more than one column to do
+        if(!stepper.move(jy,velocity)) return 1;
+      }//Y move
+///*** wait a while for user
+      cimg_library::cimg::wait(wait_time);
 ///*** X axis loop
       //X axis loop
       int ix;//absolute position along X axis (e.g. i=ix if step=1 in X direction)
@@ -473,11 +489,19 @@ int scanning_force(Cstepper &stepper,const cimg_library::CImg<int> &number,const
        #ifdef cimg_use_vt100
         cimg_library::cimg::t_green<<
        #endif
-        "(X,Y,Z)=("<<i*step(0)<<","<<j*step(1)<<","<<k*step(2)<<") "<<
+        "(X,Y,Z)=("<<ix<<","<<jy<<","<<kz<<") "<<
        #ifdef cimg_use_vt100
         cimg_library::cimg::t_normal<<
        #endif
         "step position over entire scanning of ("<<number(0)*step(0)<<","<<number(1)*step(1)<<","<<number(2)*step(2)<<") steps.\n"<<std::flush;
+///**** move along X axis
+        //force move along X axis
+        if(number(0)>1)
+        {//X move only if more than one line to do
+          if(!stepper.move(ix,velocity)) return 1;
+        }//X move
+///**** wait a while for user
+        cimg_library::cimg::wait(wait_time);
 ///**** grab
         record_images(grab,image,ImagePath,ImageNumber,i,j,k,data4scan);
 #if cimg_display>0
@@ -490,14 +514,6 @@ int scanning_force(Cstepper &stepper,const cimg_library::CImg<int> &number,const
           progress.display(colume.get_resize(zoom));
         }//do_display
 #endif //cimg_display
-///**** move along X axis
-        //move along X axis
-        if(number(0)>1)
-        {//X move only if more than one line to do
-          if(!stepper.move(stepx,velocity)) return 1;
-        }//X move
-///**** wait a while for user
-        cimg_library::cimg::wait(wait_time);
       }//X axis loop
 ///*** reset X axis
       //go back to zero on X axis (i.e. move backward along X axis)
@@ -508,7 +524,7 @@ int scanning_force(Cstepper &stepper,const cimg_library::CImg<int> &number,const
        #ifdef cimg_use_vt100
         cimg_library::cimg::t_purple<<
        #endif
-        "reset X axis to (X,Y,Z)=(0,"<<j*step(1)<<","<<k*step(2)<<")"<<
+        "reset X axis to (X,Y,Z)=(0,"<<jy<<","<<kz<<")"<<
        #ifdef cimg_use_vt100
         cimg_library::cimg::t_normal<<
        #endif
@@ -518,14 +534,6 @@ int scanning_force(Cstepper &stepper,const cimg_library::CImg<int> &number,const
         if(!stepper.move(reset_x,velocity)) return 1;
         cimg_library::cimg::wait(wait_time);
       }//X reset
-///*** move along Y axis
-      //move along Y axis
-      if(number(1)>1)
-      {//Y move only if more than one column to do
-        if(!stepper.move(stepy,velocity)) return 1;
-      }//Y move
-///*** wait a while for user
-      cimg_library::cimg::wait(wait_time);
     }//Y axis loop
 ///** reset Y axis
     //go back to zero on Y axis (i.e. move backward along Y axis)
@@ -546,14 +554,6 @@ int scanning_force(Cstepper &stepper,const cimg_library::CImg<int> &number,const
       if(!stepper.move(reset_y,velocity)) return 1;
       cimg_library::cimg::wait(wait_time);
     }//Y reset
-///** move along Z axis
-    //move along Z axis
-    if(number(2)>1)
-    {//Z move only if more than one slice to do
-      if(!stepper.move(stepz,velocity)) return 1;
-    }//Z move
-///** wait a while for user
-    cimg_library::cimg::wait(wait_time);
   }//Z axis loop
 ///* reset Z axis
   //go back to zero on Z axis (i.e. move backward along Z axis)
