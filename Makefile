@@ -38,10 +38,10 @@ lavision: Makefile
 	cp -p ../LaVision/*.o ../LaVision/linux/*.o ../scan/obj/
 	rm ../scan/obj/Read_Examples.o
 
-scan: scan.cpp Makefile data4scan.h ../rs232/serial.h ../stepper/stepper.h ../grab/grab.h ./obj/ReadIM7.o
+scan: scan.cpp Makefile scan.h data4scan.h ../rs232/serial.h ../stepper/stepper.h ../grab/grab.h ./obj/ReadIM7.o
 	$(CPP) $(OPT) $@.cpp ./obj/*.o -o $@
 
-doc: scan.Doxygen Makefile scan.cpp
+doc: scan.Doxygen Makefile scan.h data4scan.h scan.cpp
 	./doxIt.sh
 
 clean:
