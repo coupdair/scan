@@ -29,7 +29,7 @@ public:
   //! grab device
   Cgrab *pGrab;
   //! stepper device
-  Cstepper stepper;
+  Cstepper *pStepper;
 public:
   //! image data
   Cdata4scan<Tvalue,Tmap> data4scan;//mean,flag,fail (e.g. map)
@@ -61,12 +61,13 @@ public:
 **/
 bool initialise(const std::string &StepperDeviceType,const std::string &StepperDevicePath,const std::string &StepperDeviceSerialType,
   const std::string &StepperReaderDevicePath,const std::string &StepperReaderDeviceSerialType,const cimg_library::CImg<unsigned int> &mechanical_jitter,
-  const std::string &CameraDeviceType,const std::string &CameraDevicePath,const std::string &ImagePath,
+  const std::string &CameraDeviceType,const std::string &CameraDevicePath,const std::string &ImagePath,const std::string &TemporaryImagePath,
   const cimg_library::CImg<int> number)
 {
   ///grab device object
   Cgrab_factory grab_factory;
   pGrab=grab_factory.create(CameraDeviceType);
+  pGrab->temporary_image_path=TemporaryImagePath;
   //open
   if(!pGrab->open(CameraDevicePath)) return false;
   //get
@@ -79,11 +80,11 @@ bool initialise(const std::string &StepperDeviceType,const std::string &StepperD
   }//[remove] static due to loss
 
   ///stepper device object
-  //! \todo [high] need stepper factory
-  //Cstepper_factory stepper_factory;
-  //pStepper=stepper_factory.create(StepperDeviceType);
+  //! \todo [high] . need stepper factory
+  Cstepper_factory stepper_factory;
+  pStepper=stepper_factory.create(StepperDeviceType);
   //open 
-  if(!stepper.open(StepperDevicePath,StepperDeviceSerialType,StepperReaderDevicePath,StepperReaderDeviceSerialType,mechanical_jitter)) return false;
+  if(!pStepper->open(StepperDevicePath,StepperDeviceSerialType,StepperReaderDevicePath,StepperReaderDeviceSerialType,mechanical_jitter)) return false;
 
   ///data object
   #if version_cimg < 130
@@ -130,10 +131,11 @@ int record_images(Cgrab &grab,cimg_library::CImg<int> &image,const std::string &
 std::cerr<<"file=\""<<file<<"\"\n"<<std::flush;
     if(!grab.grab(image,file)) return 1;
     if(l==0&&i==0&&j==0&&k==0)
-    {//set first full image information
+    {//set first full image information (size, maximum position, ROI origin, ...)
       data4scan.set_first_full_image_information(image);
     }//first full image
-std::cerr<<"warning: no crop (in "<<__FILE__<<"/"<<__func__<<"function )\n"<<std::flush;//! \todo set crop value from data4scan width and height (i.e. make a crop_sample function AND call it here)
+//! \todo [high] set crop value from data4scan width and height (i.e. make a crop_sample function AND call it here)
+std::cerr<<"warning: no crop (in "<<__FILE__<<"/"<<__func__<<"function )\n"<<std::flush;
     data4scan.add_sample(image,i,j,k);
  }//done      end of grab images
   //compute mean image
@@ -421,6 +423,7 @@ int scanning_force(Cstepper &stepper,const cimg_library::CImg<int> &number,const
 
 #if cimg_display>0
   //GUI to display scanning progress
+//! \todo [low] volume could be removed as both content is not used and content is in Cscan class as data. Could be cleaned making a progress class.
   cimg_library::CImg<char> volume(number(0),number(1),number(2));volume.fill(2);//0=fail(red), 1=done(green), 2=to_do(blue)
   //color
 //! \todo use \c volume for setting colors to \c colume (e.g. \c red color in case of position failure; need position check stepper)
@@ -609,7 +612,7 @@ int scanning(const cimg_library::CImg<int> &number,const cimg_library::CImg<int>
   cimg_library::CImg<int> image(data4scan[0].width(),data4scan[0].height());
 #endif
   //raw scan
-  scanning_raw(stepper,number,step,velocity,wait_time,mechanical_jitter,
+  scanning_raw(*pStepper,number,step,velocity,wait_time,mechanical_jitter,
     *pGrab,image,ImagePath,ImageNumber,data4scan
 #if cimg_display>0
     ,zoom,do_display
@@ -624,7 +627,7 @@ int scanning(const cimg_library::CImg<int> &number,const cimg_library::CImg<int>
 **/
 bool close()
 {
-  stepper.close();
+  pStepper->close();
   pGrab->close();
 }//close
 

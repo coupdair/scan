@@ -75,9 +75,8 @@
 //! \todo serial_put doxygen user page
 
 //standard library
-#include <iostream>       // added by Dahi
-using namespace std;     // added by Dahi
-#include <vector>       //added by Dahi
+#include <iostream>
+#include <vector>
 #include <string>
 #include <sstream>
 ///////////////////////////////////////////  
@@ -97,7 +96,7 @@ int main(int argc, char *argv[])
 it uses different GNU libraries (see --info option)\n\n \
 usage: ./scan -h -I\n \
        ./scan --grab-device-path off_line -o ~/dataseb/AFDAR/cameraMTF/focus/image_x%02d_y%02d_z%02d_i%03d.jpg -n 3 -nx 1 -ny 1 -nz 11\n \
-version: "+std::string(VERSION)+"\t(other library versions: RS232."+std::string(RS232_VERSION)+", stepper."+std::string(STEPPER_VERSION)+", grab."+std::string(GRAB_VERSION)+")\n compilation date: " \
+version: "+std::string(VERSION)+"\t(other library versions: RS232."+std::string(RS232_VERSION)+", stepper."+std::string(STEPPER_VERSION)+", grab."+std::string(GRAB_VERSION)+", data. "+std::string(DATA_VERSION)+")\n compilation date: " \
             ).c_str());//cimg_usage
  ///information and help
   const bool show_h   =cimg_option("-h",    false,NULL);//-h hidden option
@@ -112,6 +111,7 @@ version: "+std::string(VERSION)+"\t(other library versions: RS232."+std::string(
   const unsigned int jitter=cimg_option("--jitter",10,"set mechanical jitter to go back to origin for scanning mode only (i.e. reset position with same mechanical direction, could not be negative).");
   cimg_library::CImg<unsigned int> mechanical_jitter(3);mechanical_jitter=jitter;
   const std::string ImagePath=cimg_option("-o","./image_x%02d_y%02d_z%02d_i%03d.jpg","path for image(s).");
+  const std::string TemporaryImagePath=cimg_option("-t","image_%05d.imx","temporary path for image(s) (i.e. image_%05d.imx e.g. image_000001.imx).");
   const std::string  DataPath=cimg_option("-O","./meanFlagNFail.cimg","path for extracted data file (i.e. mean images, flag and fail).");
  ///device stepper
 //! \bug [copy] need to do again stepperNreader for device command line options.
@@ -164,7 +164,7 @@ const int step_z=cimg_option("-sz",1,"displacement step along Z axis.");
   //init
   scan.initialise(StepperDeviceType,StepperDevicePath,StepperDeviceSerialType,
     StepperReaderDevicePath,StepperReaderDeviceSerialType,mechanical_jitter,
-    CameraDeviceType,CameraDevicePath,ImagePath,
+    CameraDeviceType,CameraDevicePath,ImagePath,TemporaryImagePath,
     number);//margin);
   //scan
   scan.scanning(number,step,velocity,wait_time,mechanical_jitter,

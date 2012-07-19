@@ -223,7 +223,11 @@ stat.print("full_image stat");
   {
     Tvalue max;
     //get stat for the 4D container
+#if version_cimg < 130
     cimg_library::CImgList<> stat(this->size);
+#else
+    cimg_library::CImgList<> stat(this->size());
+#endif
     cimglist_for((*this),l)
     {
       stat[l]=(*this)[l].get_stats();
@@ -239,11 +243,15 @@ stat.print("full_image stat");
     cimglist_for(stat,l) if( stat[l](1)>max ) {max=stat[l](1);Zmax=l;}//max for each CImg from list
     ///set (x,y,X,Y,Z) max position
     Z=Zmax;//set (l) i.e. (Z)
+#if version_cimg < 130
     if( !((*this)[Zmax].contains((*this)[Zmax].data[(int)stat[Zmax](5)],x,y,X,Y)) )//set (x,y,z,v) i.e. (x,y,X,Y)
     {
       x=y=X=Y=-1;//dummy values
       return cimg_library::cimg::type<Tvalue>::min();//absolute minimum value for the type
     }
+#else
+    x=(int)stat[Zmax][8];y=(int)stat[Zmax][9];X=(int)stat[Zmax][10];Y=(int)stat[Zmax][11];//set (x,y,z,v) i.e. (x,y,X,Y)
+#endif
 std::cerr<<"max="<<max<<"@(x,y,X,Y,Z)=("<<x<<","<<y<<","<<X<<","<<Y<<","<<Z<<")\n"<<std::flush;
     return max;
   }//maximum
