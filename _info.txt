@@ -7,14 +7,14 @@ clean; make && ./scan -h --device-path off_line -o ~/dataseb/AFDAR/cameraMTF/foc
 
 #run
 ##one sample (i.e. first sample; mean on 1 Sample)
-./scan --device-path off_line -o ~/dataseb/AFDAR/cameraMTF/focus/scanXYZ_sx1sy1sz1_00/image_x%02d_y%02d_z%02d_i%03d.jpg -nx 4 -ny 4 -nz 61 -n 1  -O ./meanFlagNFail.i000.xyXYZ.nc --wait-time 10 && ncdump -h ./meanFlagNFail.i000.xyXYZ.nc
+./scan --stepper-device-type fake --grab-device-type grab_image_file -o ~/dataseb/AFDAR/cameraMTF/Elphel/focus/scanXYZ_sx1sy1sz1_00/image_x%02d_y%02d_z%02d_i%03d.jpg -nx 5 -ny 5 -nz 61 -n 1  -O ./meanFlagNFail.i000.xyXYZ.nc --wait-time 10 && ncdump -h ./meanFlagNFail.i000.xyXYZ.nc
 ##one sample (e.g. thrid sample) -CImg.convert-
 ls ~/dataseb/AFDAR/cameraMTF/focus/scanXYZ_sx1sy1sz1_00/image_x00_y02_z??_i002.jpg | ../convert/CImg.convert -i stdin --sample --dimension-names x,y,Z,d,e --variable-name intensity -o meanFlagNFail.i002.xyZ@X0Y2.nc && ncwa -a d,e meanFlagNFail.i002.xyZ@X0Y2.nc meanFlagNFail.i002.3D.xyZ@X0Y2.nc && ncdump -h meanFlagNFail.i002.3D.xyZ@X0Y2.nc
 ###3D extract for paraview
 ncks -O -d X,0,0 -d Y,2,2 meanFlagNFail.i000.xyXYZ.nc meanFlagNFail.i000.3D.xyZ@X0Y2.nc; ncwa -a X,Y -O meanFlagNFail.i000.3D.xyZ@X0Y2.nc meanFlagNFail.i000.3D.xyZ@X0Y2.nc && ncdump -h meanFlagNFail.i000.3D.xyZ@X0Y2.nc && ncdump -h meanFlagNFail.i000.3D.xyZ@X0Y2.nc
 
 ##average of 10 Samples
-./scan --device-path off_line -o ~/dataseb/AFDAR/cameraMTF/focus/scanXYZ_sx1sy1sz1_00/image_x%02d_y%02d_z%02d_i%03d.jpg -nx 4 -ny 4 -nz 61 -n 10 -O ./meanFlagNFail.10S.xyXYZ.nc --wait-time 10 && ncdump -h ./meanFlagNFail.10S.xyXYZ.nc
+./scan --stepper-device-type fake --grab-device-type grab_image_file -o ~/dataseb/AFDAR/cameraMTF/focus/scanXYZ_sx1sy1sz1_00/image_x%02d_y%02d_z%02d_i%03d.jpg -nx 5 -ny 5 -nz 61 -n 10 -O ./meanFlagNFail.10S.xyXYZ.nc --wait-time 10 && ncdump -h ./meanFlagNFail.10S.xyXYZ.nc
 ###3D extract for paraview 
 ncks -O -d X,0,0 -d Y,2,2 meanFlagNFail.10S.xyXYZ.nc meanFlagNFail.10S.3D.xyZ@X0Y2.nc; ncwa -a X,Y -O meanFlagNFail.10S.3D.xyZ@X0Y2.nc meanFlagNFail.10S.3D.xyZ@X0Y2.nc && ncdump -h meanFlagNFail.10S.3D.xyZ@X0Y2.nc
 ###or 3D extract for PPlml (with XYloop)
