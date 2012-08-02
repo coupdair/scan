@@ -90,6 +90,7 @@ image.print("initialise/image for size");
   pStepper=stepper_factory.create(StepperDeviceType);
   //open 
   if(!pStepper->open(StepperDevicePath,StepperDeviceSerialType,StepperReaderDevicePath,StepperReaderDeviceSerialType,mechanical_jitter)) return false;
+cimg_library::cimg::wait(1000);
 
   ///data object
   #if version_cimg < 130
