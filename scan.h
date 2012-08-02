@@ -71,6 +71,8 @@ bool initialise(const std::string &StepperDeviceType,const std::string &StepperD
   //open
   if(!pGrab->open(CameraDevicePath)) return false;
   //get
+//! \todo [low] remove get first image that is no need as Cdata4scan::set_first_full_image_information will be called for first image only.
+  {//[remove]
   cimg_library::CImg<int> image;
   {//grab a first image (presently a sequence)
   std::string file;
@@ -83,6 +85,7 @@ bool initialise(const std::string &StepperDeviceType,const std::string &StepperD
 image.print("initialise/image for size");
   }
   }//grab a first image
+  }//[remove]
 
   ///stepper device object
   //! \todo [high] . need stepper factory
@@ -90,14 +93,17 @@ image.print("initialise/image for size");
   pStepper=stepper_factory.create(StepperDeviceType);
   //open 
   if(!pStepper->open(StepperDevicePath,StepperDeviceSerialType,StepperReaderDevicePath,StepperReaderDeviceSerialType,mechanical_jitter)) return false;
-cimg_library::cimg::wait(1000);
+cimg_library::cimg::wait(1234);
 
-  ///data object
-  #if version_cimg < 130
-  data4scan.initialise(image.width  ,image.height  ,number(0),number(1),number(2));
-  #else
-  data4scan.initialise(image.width(),image.height(),number(0),number(1),number(2));
-  #endif
+  ///data object (cropped image)
+//! \todo [low] STATIC margin and pixel size -for PCO-
+std::cerr<<__func__<<"/data4scan.initialise call\n"<<std::flush;
+  {
+  cimg_library::CImg<int> margin_pixel(2);margin_pixel=32;
+  cimg_library::CImg<float> pixel_size(2);pixel_size=6.5;
+  data4scan.initialisef(margin_pixel,pixel_size,number(0),number(1),number(2));
+  }
+std::cerr<<__func__<<"/data4scan.initialise done\n"<<std::flush;
   return true;
 }//initialise
 
@@ -139,13 +145,24 @@ int record_images(Cgrab &grab,cimg_library::CImg<int> &image,const std::string &
     image_file_name(file,ImagePath,i,j,k,l);
 std::cerr<<"file=\""<<file<<"\"\n"<<std::flush;
     if(!grab.grab(image,file)) return 1;
+//image.print("image");
     if(l==0&&i==0&&j==0&&k==0)
     {//set first full image information (size, maximum position, ROI origin, ...)
       data4scan.set_first_full_image_information(image);
     }//first full image
-//! \todo [high] _ set crop value from data4scan width and height (i.e. make a crop_sample function AND call it here)
-std::cerr<<"warning: no crop (in "<<__FILE__<<"/"<<__func__<<" function)\n"<<std::flush;
+//data4scan.print_all("data4scan");
+//! \todo [high] . set crop value from data4scan width and height (i.e. make a crop_sample function AND call it here)
+    {//crop
+    const int x0=data4scan.ROI_origin(0);
+    const int y0=data4scan.ROI_origin(1);
+    const int x1=x0+data4scan[0].width-1;
+    const int y1=y0+data4scan[0].height-1;
+    image.crop(x0,y0,x1,y1);
+//image.print("cropped image");
+    }//crop
+    //save
     image.save(file.c_str());
+    //statistics
     data4scan.add_sample(image,i,j,k);
  }//done      end of grab images
   //compute mean image
@@ -177,6 +194,7 @@ int scanning_raw(Cstepper &stepper,const cimg_library::CImg<int> &number,const c
 #endif //cimg_display
 )
 {
+std::cerr<<__FILE__<<"/"<<__func__<<"\n"<<std::flush;
 ///set signed mechanical jitter
   //set mechanical jitter for all axes with same sign as corresponding displacement.
   cimg_library::CImg<int>  mj(3);
@@ -615,6 +633,8 @@ int scanning(const cimg_library::CImg<int> &number,const cimg_library::CImg<int>
 #endif //cimg_display
 )
 {
+std::cerr<<__FILE__<<"/"<<__func__<<"\n"<<std::flush;
+data4scan.print("data4scan");
   //init image size
 #if version_cimg < 130
   cimg_library::CImg<int> image(data4scan[0].width  ,data4scan[0].height  );

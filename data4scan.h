@@ -75,6 +75,23 @@ std::cerr<<this->class_name<<"::"<<__func__<<"()\n"<<std::flush;
 #endif //cimg_use_netcdf
   }//constructor
 
+  //! print member informations
+  bool print_all(const char* title)
+  {
+    this->print(title);
+    fail.print(".flag");
+    fail.print(".fail");
+    //full image
+    std::cerr<<".full_image_size=("<<full_image_size(0)<<","<<full_image_size(1)<<")\n";
+    std::cerr<<".ROI_origin=("<<ROI_origin(0)<<","<<ROI_origin(1)<<")\n";
+    std::cerr<<".full_image_maximum="<<full_image_maximum<<" @";
+    std::cerr<<".full_image_maximum_position=("<<full_image_maximum_position(0)<<","<<full_image_maximum_position(1)<<")\n";
+    std::cerr<<".margin=("<<margin(0)<<","<<margin(1)<<")\n";
+    //statitics
+    tmp_mean.print(".tmp_mean");
+    return true;
+  }
+
   //! assign and fill temporary variables for statistics
   bool tmp_initialise(const int width,const int height,const int dimX,const int  dimY,const int dimZ)
   {
@@ -99,6 +116,7 @@ std::cerr<<"hop(0)="<<hop(0)<<" hop(1)="<<hop(1)<<" hop(2)="<<hop(2)<<"\n"<<std:
   **/
   bool initialise(const int width,const int height,const int dimX,const int dimY,const int dimZ, const int margin_x=32,const int margin_y=32)
   {
+std::cerr<<__FILE__<<"/"<<__func__<<"-crop_size\n"<<std::flush;
     ///scan init.
     this->assign(dimZ,width,height,dimX,dimY);
     cimglist_for((*this),Z) (*this)(Z).fill(-1);
@@ -131,8 +149,8 @@ std::cerr<<"hop(0)="<<hop(0)<<" hop(1)="<<hop(1)<<" hop(2)="<<hop(2)<<"\n"<<std:
   **/
   bool initialise(const cimg_library::CImg<int> &margin_pixel,const cimg_library::CImg<int> &scan_area_pixel,const int dimX,const int dimY,const int dimZ)
   {//initialise
-    if(this->margin.size!=margin_pixel.size) return false;
-    if(this->margin.size!=scan_area_pixel.size) return false;
+std::cerr<<__FILE__<<"/"<<__func__<<"-scan_area_pixel\n"<<std::flush;
+    if( (margin_pixel.size()!=2) || (scan_area_pixel.size()!=2) ) return false;
     const int width= margin_pixel(0)*2+scan_area_pixel(0);
     const int height=margin_pixel(1)*2+scan_area_pixel(1);
     return initialise(width,height,dimX,dimY,dimZ,margin_pixel(0),margin_pixel(1));
@@ -146,8 +164,9 @@ std::cerr<<"hop(0)="<<hop(0)<<" hop(1)="<<hop(1)<<" hop(2)="<<hop(2)<<"\n"<<std:
    * \param [in] dim_Y: number of position along Y axis, i.e. scan size along Y (e.g. 12 positions, i.e. 12 steps).
    * \param [in] dim_Z: number of position along Z axis, i.e. scan size along Z (e.g. 61 positions for a focus search).
   **/
-  bool initialise(const cimg_library::CImg<int> &margin_pixel,const cimg_library::CImg<float> &pixel_size, const int dimX,const int dimY,const int dimZ)
+  bool initialisef(const cimg_library::CImg<int> &margin_pixel,const cimg_library::CImg<float> &pixel_size, const int dimX,const int dimY,const int dimZ)
   {//initialise
+std::cerr<<__FILE__<<"/"<<__func__<<"-pixel_size\n"<<std::flush;
     cimg_library::CImg<int> scan_area_pixel(2);
     scan_area_pixel(0)=dimX/pixel_size;
     scan_area_pixel(1)=dimY/pixel_size;
@@ -157,6 +176,7 @@ std::cerr<<"hop(0)="<<hop(0)<<" hop(1)="<<hop(1)<<" hop(2)="<<hop(2)<<"\n"<<std:
   //! set information for first  full image to store in NetCDF (or information file, not implemented yet !)
   bool set_first_full_image_information(cimg_library::CImg<int> &full_image,const int i=0,const int j=0,const int k=0)
   {
+std::cerr<<__FILE__<<"/"<<__func__<<"\n"<<std::flush;
     if(i!=0||j!=0||k!=0) return false;
     ///full image size
 #if version_cimg < 130
@@ -172,14 +192,18 @@ std::cerr<<"hop(0)="<<hop(0)<<" hop(1)="<<hop(1)<<" hop(2)="<<hop(2)<<"\n"<<std:
 full_image.print("full_image");
 stat.print("full_image stat");
     int x,y,z,v;
-    if( !full_image.contains(full_image.offset((int)stat(5)),x,y,z,v) )//set (x,y)
+    //if( !full_image.contains(full_image.offset((int)stat(5)),x,y,z,v) )//set (x,y)
+    if( !full_image.contains(full_image.data[(int)stat(5)],x,y,z,v) )//set (x,y)
     {
+      std::cerr<<"Warning: maximum not in image !? -might be CImg library version error-\ndebug:\n"<<std::flush;
+      std::cerr<<"@(x,y,z,v)=("<<x<<","<<y<<","<<z<<","<<v<<")\n"<<std::flush;
+      full_image.print("full_image");
       full_image_maximum=cimg_library::cimg::type<Tvalue>::min();//absolute minimum value for the type
       full_image_maximum_position=-1;//dummy values
       ROI_origin=-1;
       return false;
     }
-    full_image_maximum=stat(1);
+    full_image_maximum=stat(1);//max
     full_image_maximum_position(0)=x;
     full_image_maximum_position(1)=y;
     ///ROI rectangle
