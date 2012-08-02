@@ -125,6 +125,8 @@ int record_images(Cgrab &grab,cimg_library::CImg<int> &image,const std::string &
 {
 //std::cerr<<__FILE__<<"/"<<__func__<<": grab type="<<grab.class_name<<".\n"<<std::flush;
   std::string file;
+//! \todo . add AandDEE reset and DaVis jump
+  grab.sequence_initialisation(ImageNumber);//DaVis and AandDEE reset
   for(int l=0;l<ImageNumber;++l)
   {//do
     image_file_name(file,ImagePath,i,j,k,l);
