@@ -85,7 +85,7 @@ cimg_library::CImg<Tmap> hop=cimg_library::CImg<Tmap>::vector(1,2,3);
 hop.print("vector");
 std::cerr<<"hop(0)="<<hop(0)<<" hop(1)="<<hop(1)<<" hop(2)="<<hop(2)<<"\n"<<std::flush;
     return true;
-  }//initialise
+  }//tmp_initialise
 
   //! assign and fill
   /**
@@ -196,7 +196,7 @@ stat.print("full_image stat");
     tmp_count++;
 //! \todo [very low] do also min, max, ...
     return true;
-  }//initialise
+  }//add_sample
 
   //! normalise statistics for all added samples and set data at (i,j,k) postion.
   // \see add_sample

@@ -72,12 +72,17 @@ bool initialise(const std::string &StepperDeviceType,const std::string &StepperD
   if(!pGrab->open(CameraDevicePath)) return false;
   //get
   cimg_library::CImg<int> image;
-  //! \todo [high] need to do again initialisation of image for its sizes and for maximum position in image.
-  {//[remove] static due to loss
+  {//grab a first image (presently a sequence)
   std::string file;
   this->image_file_name(file,ImagePath,0,0,0,0);
-  if(!pGrab->grab(image,file)) return false;
-  }//[remove] static due to loss
+//! \todo v record full sequence (to have compatibility with AandDEE reset)
+  pGrab->sequence_initialisation(number(3));
+  for(int i=0;i<number(3);++i)
+  {
+    if(!pGrab->grab(image,file)) return false;
+image.print("initialise/image for size");
+  }
+  }//grab a first image
 
   ///stepper device object
   //! \todo [high] . need stepper factory

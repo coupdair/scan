@@ -141,7 +141,7 @@ const int step_z=cimg_option("-sz",1,"displacement step along Z axis.");
   velocity(2)=velocity_z;
   }
   ///number of steps
-  cimg_library::CImg<int> number(3);number.fill(1);  // it was fill(1) for x and y
+  cimg_library::CImg<int> number(4);number.fill(1);  // it was fill(1) for x and y
   {
   const int number_x=cimg_option("-nx",10,"number of displacement along X axis.");
   number(0)=number_x;
@@ -150,6 +150,7 @@ const int step_z=cimg_option("-sz",1,"displacement step along Z axis.");
   const int number_z=cimg_option("-nz",1,"number of displacement along z axis.");
   number(2)=number_z;
   }
+  number(3)=ImageNumber;
 #if cimg_display>0
   const bool do_display=cimg_option("-X",false,"activate GUI (i.e. progress display during scan mode only; set --scan true option).");
   const unsigned int zoom=cimg_option("--GUI-progress-zoom",100,"GUI progress display zoom.");
