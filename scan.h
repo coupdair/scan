@@ -105,7 +105,8 @@ bool initialise(const std::string &StepperDeviceType,const std::string &StepperD
 bool image_file_name(std::string &file_name,const std::string &file_path_format, int i,int j,int k,int l)
 {
   char fileAsCA[512];
-  std::sprintf((char*)fileAsCA/*.c_str()*/,file_path_format.c_str(),i,j,k,l);//e.g. file_path_format="./img_x%02d_y%02d_z%02d_i%03d.png"
+//  std::sprintf((char*)fileAsCA/*.c_str()*/,file_path_format.c_str(),i,j,k,l);//e.g. file_path_format="./img_x%02d_y%02d_z%02d_i%03d.png"
+  std::sprintf((char*)fileAsCA/*.c_str()*/,file_path_format.c_str(),k,j,i,l);//e.g. file_path_format="./img_z%02d_y%02d_x%02d_i%03d.png"
   file_name=fileAsCA;
   return true;
 }//image_file_name
@@ -136,8 +137,9 @@ std::cerr<<"file=\""<<file<<"\"\n"<<std::flush;
     {//set first full image information (size, maximum position, ROI origin, ...)
       data4scan.set_first_full_image_information(image);
     }//first full image
-//! \todo [high] set crop value from data4scan width and height (i.e. make a crop_sample function AND call it here)
-std::cerr<<"warning: no crop (in "<<__FILE__<<"/"<<__func__<<"function )\n"<<std::flush;
+//! \todo [high] _ set crop value from data4scan width and height (i.e. make a crop_sample function AND call it here)
+std::cerr<<"warning: no crop (in "<<__FILE__<<"/"<<__func__<<" function)\n"<<std::flush;
+    image.save(file.c_str());
     data4scan.add_sample(image,i,j,k);
  }//done      end of grab images
   //compute mean image
