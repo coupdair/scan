@@ -169,13 +169,17 @@ const int step_z=cimg_option("-sz",1,"displacement step along Z axis.");
     number);//margin);
   //scan
   scan.scanning(number,step,velocity,wait_time,mechanical_jitter,
-    ImagePath,ImageNumber
+    ImagePath,ImageNumber,DataPath
 #if cimg_display>0
     ,zoom,do_display
 #endif //cimg_display
     );//scanning
   //save
   scan.data4scan.save(DataPath);//save processed data (e.g. mean images), flag (i.e. satisfied (or not) map) and fail (i.e. number of failing map).
+{//force NetCDF
+std::string tmp=DataPath+".nc";
+scan.data4scan.save(tmp);
+}//force NetCDF
 scan.data4scan.print("mean");
 scan.data4scan.flag.print("flag");
 scan.data4scan.fail.print("fail");
@@ -183,6 +187,4 @@ scan.data4scan.fail.print("fail");
   scan.close();
   return 0;
 }//main
-
-
 

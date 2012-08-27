@@ -235,7 +235,8 @@ stat.print("full_image stat");
     ((*this)(k)).draw_image(0,0,i,j,tmp_mean);
 #endif
     //reset mean for a next sum (e.g. setup following usage).
-    tmp_mean=0.0;tmp_count=0;
+//! \todo [very high] put this reset to 0 back.
+//    tmp_mean=0.0;tmp_count=0;
     return true;
   }//normalise
 

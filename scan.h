@@ -97,13 +97,13 @@ cimg_library::cimg::wait(1234);
 
   ///data object (cropped image)
 //! \todo [low] STATIC margin and pixel size -for PCO-
-std::cerr<<__func__<<"/data4scan.initialise call\n"<<std::flush;
+//std::cerr<<__func__<<"/data4scan.initialise call\n"<<std::flush;
   {
   cimg_library::CImg<int> margin_pixel(2);margin_pixel=32;
   cimg_library::CImg<float> pixel_size(2);pixel_size=6.5;
   data4scan.initialisef(margin_pixel,pixel_size,number(0),number(1),number(2));
   }
-std::cerr<<__func__<<"/data4scan.initialise done\n"<<std::flush;
+//std::cerr<<__func__<<"/data4scan.initialise done\n"<<std::flush;
   return true;
 }//initialise
 
@@ -134,10 +134,11 @@ bool image_file_name(std::string &file_name,const std::string &file_path_format,
  * \param [in] i,j,k: dimension index for current image i.e. file name (e.g. 0,0,0)
  * \param [out] data4scan: statistics of recorded images and status map.
 **/
-int record_images(Cgrab &grab,cimg_library::CImg<int> &image,const std::string &ImagePath,const int ImageNumber,const int i,const int j,const int k,Cdata4scan<float,int> &data4scan)
+int record_images(Cgrab &grab,cimg_library::CImg<int> &image,const std::string &ImagePath,const int ImageNumber,const int i,const int j,const int k,Cdata4scan<float,int> &data4scan,const std::string &DataPath)
 {
 //std::cerr<<__FILE__<<"/"<<__func__<<": grab type="<<grab.class_name<<".\n"<<std::flush;
   std::string file;
+std::string file_list;
 //! \todo . add AandDEE reset and DaVis jump
   grab.sequence_initialisation(ImageNumber);//DaVis and AandDEE reset
   for(int l=0;l<ImageNumber;++l)
@@ -145,6 +146,9 @@ int record_images(Cgrab &grab,cimg_library::CImg<int> &image,const std::string &
     image_file_name(file,ImagePath,i,j,k,l);
 std::cerr<<"file=\""<<file<<"\"\n"<<std::flush;
     if(!grab.grab(image,file)) return 1;
+file_list+=" "+grab.temporary_image_name;
+std::cerr<<"WARNING: set ImagerIntense dead pixel to 0 !!\n"<<std::flush;
+image(493,763)=0;
 //image.print("image");
     if(l==0&&i==0&&j==0&&k==0)
     {//set first full image information (size, maximum position, ROI origin, ...)
@@ -168,6 +172,26 @@ std::cerr<<"file=\""<<file<<"\"\n"<<std::flush;
   //compute mean image
 //! \todo [low] set data4scan type (factory) or add maximum and minimum variable within it
   data4scan.normalise(i,j,k);
+{//save mean image
+//save mean
+image_file_name(file,DataPath,i,j,k,-1);
+data4scan.tmp_mean.save(file.c_str());
+//save int mean
+cimg_library::CImg<unsigned short> meanAsInt(data4scan.tmp_mean);
+file+=".16bit.cimg";
+meanAsInt.save(file.c_str());
+//reset to zero (put it back in .normalise
+data4scan.tmp_mean=0.0;data4scan.tmp_count=0;
+}//save mean image
+{//remove temporary image files
+image_file_name(file,grab.temporary_image_path,-1,-1,grab.temporary_image_index,-1);
+file+=".remove.txt";
+std::ofstream fo(file.c_str(),ofstream::binary);
+fo<<file_list<<std::flush;
+fo.close();
+std::string cmd="rm `cat "+file+"`";
+std::system(cmd.c_str());
+}//remove temporary image files
   //set flag
   data4scan.flag(i,j,k)=1;//satisfied
   return 0;
@@ -188,7 +212,7 @@ std::cerr<<"file=\""<<file<<"\"\n"<<std::flush;
  * \param[in] mechanical_jitter: mechanical jitter to perform a good reset for any axes
 **/
 int scanning_raw(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_library::CImg<int> &step,const cimg_library::CImg<int> &velocity,const int wait_time, const unsigned int mechanical_jitter,
-  Cgrab &grab,cimg_library::CImg<int> &image,const std::string &ImagePath,const int ImageNumber,Cdata4scan<Tvalue,Tmap> &data4scan
+  Cgrab &grab,cimg_library::CImg<int> &image,const std::string &ImagePath,const int ImageNumber,Cdata4scan<Tvalue,Tmap> &data4scan,const std::string  DataPath
 #if cimg_display>0
   ,const unsigned int zoom=100,const bool do_display=false
 #endif //cimg_display
@@ -284,7 +308,7 @@ std::cerr<<__FILE__<<"/"<<__func__<<"\n"<<std::flush;
        #endif
         "step position over entire scanning of ("<<number(0)*step(0)<<","<<number(1)*step(1)<<","<<number(2)*step(2)<<") steps.\n"<<std::flush;
 ///**** grab
-        record_images(grab,image,ImagePath,ImageNumber,i,j,k,data4scan);
+        record_images(grab,image,ImagePath,ImageNumber,i,j,k,data4scan,DataPath);
 #if cimg_display>0
         //set status
         volume(i,j,k)=1;
@@ -415,7 +439,7 @@ std::cerr<<__FILE__<<"/"<<__func__<<"\n"<<std::flush;
  * \param[in] mechanical_jitter: mechanical jitter to perform a good reset for any axes
 **/
 int scanning_force(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_library::CImg<int> &step,const cimg_library::CImg<int> &velocity,const int wait_time, const unsigned int mechanical_jitter,
-  Cgrab &grab,cimg_library::CImg<int> &image,const std::string &ImagePath,const int ImageNumber,Cdata4scan<Tvalue,Tmap> &data4scan
+  Cgrab &grab,cimg_library::CImg<int> &image,const std::string &ImagePath,const int ImageNumber,Cdata4scan<Tvalue,Tmap> &data4scan,const std::string &DataPath
 #if cimg_display>0
   ,const unsigned int zoom=100,const bool do_display=false
 #endif //cimg_display
@@ -474,10 +498,14 @@ int scanning_force(Cstepper &stepper,const cimg_library::CImg<int> &number,const
 #endif //cimg_display
 
 ///* Z axis loop
+  //absolute position (3D)
+  cimg_library::CImg<int> pos(3);pos.fill(0);//e.g. (1,2,3)
   //Z axis loop
   int kz;//absolute position along Z axis (e.g. k=kz if step=1 in Z direction)
   for(int k=0,kz=0;k<number(2);++k,kz+=step(2))
   {
+    //set current Z for absolute position
+    pos(2)=kz;
 #if cimg_display>0
     if(do_display)
     {
@@ -491,7 +519,7 @@ int scanning_force(Cstepper &stepper,const cimg_library::CImg<int> &number,const
     //force move along Z axis
     if(number(2)>1)
     {//Z move only if more than one slice to do
-      if(!stepper.move(kz,velocity)) return 1;
+      if(!stepper.move(pos,velocity)) return 1;
     }//Z move
 ///** wait a while for user
     cimg_library::cimg::wait(wait_time);
@@ -502,11 +530,14 @@ int scanning_force(Cstepper &stepper,const cimg_library::CImg<int> &number,const
     //Y axis loop
     for(int j=0,jy=0;j<number(1);++j,jy+=step(1))
     {
+      //set current Y for absolute position
+      pos(1)=jy;
 ///*** move along Y axis
       //force move along Y axis
       if(number(1)>1)
       {//Y move only if more than one column to do
-        if(!stepper.move(jy,velocity)) return 1;
+        if(!stepper.move(pos,velocity)) return 1;
+//        if(!stepper.move(1,jy,velocity)) return 1;
       }//Y move
 ///*** wait a while for user
       cimg_library::cimg::wait(wait_time);
@@ -515,6 +546,8 @@ int scanning_force(Cstepper &stepper,const cimg_library::CImg<int> &number,const
       int ix;//absolute position along X axis (e.g. i=ix if step=1 in X direction)
       for(int i=0,ix=0;i<number(0);++i,ix+=step(0))
       {
+        //set current Y for absolute position
+        pos(0)=ix;
 ///**** position message
         std::cerr << "actual displacement to "<<
        #ifdef cimg_use_vt100
@@ -529,12 +562,13 @@ int scanning_force(Cstepper &stepper,const cimg_library::CImg<int> &number,const
         //force move along X axis
         if(number(0)>1)
         {//X move only if more than one line to do
-          if(!stepper.move(ix,velocity)) return 1;
+        if(!stepper.move(pos,velocity)) return 1;
+//        if(!stepper.move(0,ix,velocity)) return 1;
         }//X move
 ///**** wait a while for user
         cimg_library::cimg::wait(wait_time);
 ///**** grab
-        record_images(grab,image,ImagePath,ImageNumber,i,j,k,data4scan);
+        record_images(grab,image,ImagePath,ImageNumber,i,j,k,data4scan,DataPath);
 #if cimg_display>0
         //set status
         volume(i,j,k)=1;
@@ -570,6 +604,7 @@ int scanning_force(Cstepper &stepper,const cimg_library::CImg<int> &number,const
     //go back to zero on Y axis (i.e. move backward along Y axis)
     if(number(1)>1)
     {//Y reset (with mechanical jitter)
+std::cerr<<"WARNING: reset in Y direction is limited for safety in physical space.\n"<<std::flush;
       // 0. reset message
       std::cerr<<
      #ifdef cimg_use_vt100
@@ -590,6 +625,7 @@ int scanning_force(Cstepper &stepper,const cimg_library::CImg<int> &number,const
   //go back to zero on Z axis (i.e. move backward along Z axis)
   if(number(2)>1)
   {//Z reset (with mechanical jitter)
+std::cerr<<"WARNING: reset in Z direction is limited for safety in physical space.\n"<<std::flush;
     // 0. reset message
     std::cerr<<
    #ifdef cimg_use_vt100
@@ -627,7 +663,7 @@ int scanning_force(Cstepper &stepper,const cimg_library::CImg<int> &number,const
  * \param[in] mechanical_jitter: mechanical jitter to perform a good reset for any axes
 **/
 int scanning(const cimg_library::CImg<int> &number,const cimg_library::CImg<int> &step,const cimg_library::CImg<int> &velocity,const int wait_time, const unsigned int mechanical_jitter,
-  const std::string &ImagePath,const int ImageNumber
+  const std::string &ImagePath,const int ImageNumber,const std::string  DataPath
 #if cimg_display>0
   ,const unsigned int zoom=100,const bool do_display=false
 #endif //cimg_display
@@ -642,8 +678,9 @@ data4scan.print("data4scan");
   cimg_library::CImg<int> image(data4scan[0].width(),data4scan[0].height());
 #endif
   //raw scan
-  scanning_raw(*pStepper,number,step,velocity,wait_time,mechanical_jitter,
-    *pGrab,image,ImagePath,ImageNumber,data4scan
+//  scanning_raw(*pStepper,number,step,velocity,wait_time,mechanical_jitter,
+  scanning_force(*pStepper,number,step,velocity,wait_time,mechanical_jitter,
+    *pGrab,image,ImagePath,ImageNumber,data4scan,DataPath
 #if cimg_display>0
     ,zoom,do_display
 #endif //cimg_display
