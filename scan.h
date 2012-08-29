@@ -64,7 +64,7 @@ bool initialise(const std::string &StepperDeviceType,const std::string &StepperD
   const std::string &CameraDeviceType,const std::string &CameraDevicePath,const std::string &ImagePath,const std::string &TemporaryImagePath,
   const cimg_library::CImg<int> &number,
   const cimg_library::CImg<int> &margin_pixel,
-  const cimg_library::CImg<int> &pixel_size,
+  const cimg_library::CImg<float> &pixel_size,
   const int x0,const int y0,const int x1,const int y1)
 {
   ///grab device object
@@ -99,17 +99,18 @@ image.print("initialise/image for size");
 cimg_library::cimg::wait(1234);
 
   ///data object (cropped image)
-  if(x0<0)
+  if(x0<0||y0<0||x1<0||y1<0)
   {
-  data4scan.initialisef(margin_pixel,pixel_size,number(0),number(1),number(2));
+std::cerr<<"Information: cropped image (i.e. ROI) size is set from margin and pixel size (and scan parameters too).\n"<<std::flush;
+    data4scan.initialisef(margin_pixel,pixel_size,number(0),number(1),number(2));
   }
   else
   {
-  const int width=x1-x0+1;
-  const int height=y1-y0+1;
-  data4scan.initialise(width,height,number(0),number(1),number(2),margin_pixel(0),margin_pixel(1),x0,y0);
+std::cerr<<"Information: cropped image (i.e. ROI) size is set by ROI rectangle coordinates, only.\n"<<std::flush;
+    const int width=x1-x0+1;
+    const int height=y1-y0+1;
+    data4scan.initialise(width,height,number(0),number(1),number(2),margin_pixel(0),margin_pixel(1),x0,y0);
   }
-//std::cerr<<__func__<<"/data4scan.initialise done\n"<<std::flush;
   return true;
 }//initialise
 

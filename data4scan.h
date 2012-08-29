@@ -128,7 +128,8 @@ std::cerr<<__FILE__<<"/"<<__func__<<"-crop_size\n"<<std::flush;
     full_image_size.assign(2);
     full_image_size=-1;
     ROI_origin.assign(2);
-    ROI_origin=-1;
+    ROI_origin(0)=x0;
+    ROI_origin(1)=y0;
     margin.assign(2);
     margin(0)=margin_x;
     margin(1)=margin_y;
@@ -207,7 +208,7 @@ stat.print("full_image stat");
     full_image_maximum_position(0)=x;
     full_image_maximum_position(1)=y;
     ///ROI rectangle
-    if(ROI_origin(0)==-1)
+    if(ROI_origin(0)<0||ROI_origin(1)<0)
     {
       ROI_origin(0)=x-margin(0);
       ROI_origin(1)=y-margin(1);

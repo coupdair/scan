@@ -4,12 +4,13 @@
  usage: ./scan -h -I
         ./scan --grab-device-path off_line -o ~/dataseb/AFDAR/cameraMTF/focus/image_x%02d_y%02d_z%02d_i%03d.jpg -n 3 -nx 1 -ny 1 -nz 11
  version: v0.2.5	(other library versions: RS232.v0.3.4, stepper.v0.2.0, grab.v0.1.8, data.v0.0.7)
- compilation date:  (Aug 29 2012, 14:09:05)
+ compilation date:  (Aug 29 2012, 15:13:22)
 
+  * general options
     --help   = true         : help (or -h option)
     --info   = true         : show compilation options (or -I option)
 
- CImg Library 1.25, compiled Aug 29 2012 ( 14:09:05 ) with the following flags :
+ CImg Library 1.25, compiled Aug 29 2012 ( 15:13:22 ) with the following flags :
 
   > CPU endianness :         Little Endian
   > Operating System :       Unix          ('cimg_OS'=1)
@@ -29,18 +30,21 @@
   > Path of 'medcon' :       "medcon"      ('cimg_medcon_path' undefined)
   > Temporary path :         "/tmp"        ('cimg_temporary_path' undefined)
 
+  * grab device (e.g. camera) and image (see also Region Of Interest -ROI-) options
     --grab-device-type = grab_WGet    : type of grab device (e.g. ArduinoTTL or grab_WGet or Elphel_OpenCV or Elphel_rtsp or grab_image_file).
     --grab-device-path = 192.168.0.9  : path of grab device.
     -n       = 10           : number of images to acquire.
-    --jitter = 10           : set mechanical jitter to go back to origin for scanning mode only (i.e. reset position with same mechanical direction, could not be negative).
     -o       = ./image_x%02d_y%02d_z%02d_i%03d.jpg : path for image(s).
     -t       = image_%05d.imx : temporary path for image(s) (i.e. image_%05d.imx e.g. image_000001.imx).
     -O       = ./meanFlagNFail.cimg : path for extracted data file (i.e. mean images, flag and fail).
+  * stepper device (e.g. translation stage) options
     --stepper-device-type = uControlXYZ  : Type of stepper device
     --stepper-device-path = /dev/ttyUSB0 : Path of stepper device
     --stepper-device-serial-type = serial_system : Type of serial device for stepper (i.e. serial_termios or serial_system)
     --position-reader-device-path = /dev/ttyUSB1 : path of position reader device
     --position-reader-serial-type = serial_system : type of serial device for position reader (i.e. serial_termios or serial_system)
+  * scanning options
+    --jitter = 10           : set mechanical jitter to go back to origin for scanning mode only (i.e. reset position with same mechanical direction, could not be negative).
     -sx      = 10           : displacement step along X axis in step (e.g. -10 steps to go backward, i.e. displacement can be positive or negative).
     -sy      = 10           : displacement step along Y axis in step.
     -sz      = 1            : displacement step along Z axis in step.
@@ -50,12 +54,15 @@
     -nx      = 10           : number of displacement along X axis.
     -ny      = 10           : number of displacement along Y axis.
     -nz      = 1            : number of displacement along z axis.
+  ** ROI option 1: automatic setup from full image maximum position and using pixel size and margin
     -px      = 6.45         : pixel size along x direction in step (pixel size used only if crop coordinates are negative, default).
     -py      = 6.45         : pixel size along y direction in step (e.g. if step is 1 um, 2.2 for Elphel or 6.45 for ImageIntense.
     -mx      = 32           : margin width (margin used only if crop coordinates are negative, default).
     -my      = 32           : margin height.
+  ** ROI option 2: fixed rectangle
     -x0      = -1           : crop x0 coordinate in pixel: left   (e.g. -x0 12 or default maximum centering).
     -y0      = -1           : crop y0 coordinate in pixel: top    (e.g. -y0 34) range should be [0..height-1].
     -x1      = -1           : crop x1 coordinate in pixel: right  (e.g. -x1 56).
     -y1      = -1           : crop y1 coordinate in pixel: bottom (e.g. -y1 78).
+  * others
     --wait-time = 1000         : wait time between steps in ms.
