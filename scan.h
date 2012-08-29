@@ -62,7 +62,9 @@ public:
 bool initialise(const std::string &StepperDeviceType,const std::string &StepperDevicePath,const std::string &StepperDeviceSerialType,
   const std::string &StepperReaderDevicePath,const std::string &StepperReaderDeviceSerialType,const cimg_library::CImg<unsigned int> &mechanical_jitter,
   const std::string &CameraDeviceType,const std::string &CameraDevicePath,const std::string &ImagePath,const std::string &TemporaryImagePath,
-  const cimg_library::CImg<int> number,
+  const cimg_library::CImg<int> &number,
+  const cimg_library::CImg<int> &margin_pixel,
+  const cimg_library::CImg<int> &pixel_size,
   const int x0,const int y0,const int x1,const int y1)
 {
   ///grab device object
@@ -97,20 +99,15 @@ image.print("initialise/image for size");
 cimg_library::cimg::wait(1234);
 
   ///data object (cropped image)
-//! \todo [low] STATIC margin and pixel size -for PCO-
-//std::cerr<<__func__<<"/data4scan.initialise call\n"<<std::flush;
-/*
+  if(x0<0)
   {
-  cimg_library::CImg<int> margin_pixel(2);margin_pixel=32;
-  cimg_library::CImg<float> pixel_size(2);pixel_size=6.5;
   data4scan.initialisef(margin_pixel,pixel_size,number(0),number(1),number(2));
   }
-*/
+  else
   {
-  const int margin_x=32;const int margin_y=32;
   const int width=x1-x0+1;
   const int height=y1-y0+1;
-  data4scan.initialise(width,height,number(0),number(1),number(2),margin_x,margin_y,x0,y0);
+  data4scan.initialise(width,height,number(0),number(1),number(2),margin_pixel(0),margin_pixel(1),x0,y0);
   }
 //std::cerr<<__func__<<"/data4scan.initialise done\n"<<std::flush;
   return true;

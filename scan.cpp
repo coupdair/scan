@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
 it uses different GNU libraries (see --info option)\n\n \
 usage: ./scan -h -I\n \
        ./scan --grab-device-path off_line -o ~/dataseb/AFDAR/cameraMTF/focus/image_x%02d_y%02d_z%02d_i%03d.jpg -n 3 -nx 1 -ny 1 -nz 11\n \
-version: "+std::string(VERSION)+"\t(other library versions: RS232."+std::string(RS232_VERSION)+", stepper."+std::string(STEPPER_VERSION)+", grab."+std::string(GRAB_VERSION)+", data. "+std::string(DATA_VERSION)+")\n compilation date: " \
+version: "+std::string(VERSION)+"\t(other library versions: RS232."+std::string(RS232_VERSION)+", stepper."+std::string(STEPPER_VERSION)+", grab."+std::string(GRAB_VERSION)+", data."+std::string(DATA_VERSION)+")\n compilation date: " \
             ).c_str());//cimg_usage
  ///information and help
   const bool show_h   =cimg_option("-h",    false,NULL);//-h hidden option
@@ -123,11 +123,11 @@ version: "+std::string(VERSION)+"\t(other library versions: RS232."+std::string(
   ///displacement
   cimg_library::CImg<int> step(3);step.fill(0);
   {
-  const int step_x=cimg_option("-sx",10,"displacement step along X axis (e.g. -10 steps to go backward, i.e. displacement can be positive or negative).");
+  const int step_x=cimg_option("-sx",10,"displacement step along X axis in step (e.g. -10 steps to go backward, i.e. displacement can be positive or negative).");
   step(0)=step_x;
-const int step_y=cimg_option("-sy",10,"displacement step along Y axis.");
+  const int step_y=cimg_option("-sy",10,"displacement step along Y axis in step.");
   step(1)=step_y;
-const int step_z=cimg_option("-sz",1,"displacement step along Z axis.");
+  const int step_z=cimg_option("-sz", 1,"displacement step along Z axis in step.");
   step(2)=step_z;
   }
   ///velocity
@@ -151,11 +151,28 @@ const int step_z=cimg_option("-sz",1,"displacement step along Z axis.");
   number(2)=number_z;
   }
   number(3)=ImageNumber;
+  ///camera pixel size
+  cimg_library::CImg<float> pixel_size(2);pixel_size.fill(6.45);//e-6);//PCO
+  {
+  const float px=cimg_option("-px",pixel_size(0),"pixel size along x direction in step (pixel size used only if crop coordinates are negative, default).");
+  pixel_size(0)=px;
+  const float py=cimg_option("-py",pixel_size(1),"pixel size along y direction in step (e.g. if step is 1 um, 2.2 for Elphel or 6.45 for ImageIntense.");
+  pixel_size(1)=py;
+  }
   ///ROI (crop)
-  const int x0=cimg_option("-x0",-1,"crop x0 coordinate: left   (e.g. -x0 15 or default maximum centering).");
-  const int y0=cimg_option("-y0",-1,"crop y0 coordinate: top    (e.g. -y0 27).");
-  const int x1=cimg_option("-x1",-1,"crop x1 coordinate: right  (e.g. -x1 63).");
-  const int y1=cimg_option("-y1",-1,"crop y1 coordinate: bottom (e.g. -y1 127).");
+  ////ROI margin
+  cimg_library::CImg<int> margin(2);margin.fill(32);
+  {
+  const int mx=cimg_option("-mx",margin(0),"margin width (margin used only if crop coordinates are negative, default).");
+  margin(0)=mx;
+  const int my=cimg_option("-my",margin(1),"margin height.");
+  margin(1)=my;
+  }
+  ////ROI rectangle
+  const int x0=cimg_option("-x0",-1,"crop x0 coordinate in pixel: left   (e.g. -x0 12 or default maximum centering).");
+  const int y0=cimg_option("-y0",-1,"crop y0 coordinate in pixel: top    (e.g. -y0 34) range should be [0..height-1].");
+  const int x1=cimg_option("-x1",-1,"crop x1 coordinate in pixel: right  (e.g. -x1 56).");
+  const int y1=cimg_option("-y1",-1,"crop y1 coordinate in pixel: bottom (e.g. -y1 78).");
 
 #if cimg_display>0
   const bool do_display=cimg_option("-X",false,"activate GUI (i.e. progress display during scan mode only; set --scan true option).");
@@ -172,7 +189,7 @@ const int step_z=cimg_option("-sz",1,"displacement step along Z axis.");
   scan.initialise(StepperDeviceType,StepperDevicePath,StepperDeviceSerialType,
     StepperReaderDevicePath,StepperReaderDeviceSerialType,mechanical_jitter,
     CameraDeviceType,CameraDevicePath,ImagePath,TemporaryImagePath,
-    number,x0,y0,x1,y1);//margin);
+    number,margin,pixel_size,x0,y0,x1,y1);
   //scan
   scan.scanning(number,step,velocity,wait_time,mechanical_jitter,
     ImagePath,ImageNumber,DataPath

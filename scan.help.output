@@ -3,13 +3,13 @@
 
  usage: ./scan -h -I
         ./scan --grab-device-path off_line -o ~/dataseb/AFDAR/cameraMTF/focus/image_x%02d_y%02d_z%02d_i%03d.jpg -n 3 -nx 1 -ny 1 -nz 11
- version: v0.2.4	(other library versions: RS232.v0.3.4, stepper.v0.1.9, grab.v0.1.7, data. v0.0.7)
- compilation date:  (Aug 16 2012, 13:40:36)
+ version: v0.2.5	(other library versions: RS232.v0.3.4, stepper.v0.2.0, grab.v0.1.8, data.v0.0.7)
+ compilation date:  (Aug 29 2012, 14:09:05)
 
     --help   = true         : help (or -h option)
     --info   = true         : show compilation options (or -I option)
 
- CImg Library 1.25, compiled Aug 16 2012 ( 13:40:36 ) with the following flags :
+ CImg Library 1.25, compiled Aug 29 2012 ( 14:09:05 ) with the following flags :
 
   > CPU endianness :         Little Endian
   > Operating System :       Unix          ('cimg_OS'=1)
@@ -41,13 +41,21 @@
     --stepper-device-serial-type = serial_system : Type of serial device for stepper (i.e. serial_termios or serial_system)
     --position-reader-device-path = /dev/ttyUSB1 : path of position reader device
     --position-reader-serial-type = serial_system : type of serial device for position reader (i.e. serial_termios or serial_system)
-    -sx      = 10           : displacement step along X axis (e.g. -10 steps to go backward, i.e. displacement can be positive or negative).
-    -sy      = 10           : displacement step along Y axis.
-    -sz      = 1            : displacement step along Z axis.
+    -sx      = 10           : displacement step along X axis in step (e.g. -10 steps to go backward, i.e. displacement can be positive or negative).
+    -sy      = 10           : displacement step along Y axis in step.
+    -sz      = 1            : displacement step along Z axis in step.
     -vx      = 1000         : displacement velocity along X axis (note: absolute  velocity, i.e. could not be negative).
     -vy      = 1000         : displacement velocity along Y axis (note: absolute  velocity, i.e. could not be negative).
     -vz      = 1000         : displacement velocity along X axis (note: absolute  velocity, i.e. could not be negative).
     -nx      = 10           : number of displacement along X axis.
     -ny      = 10           : number of displacement along Y axis.
     -nz      = 1            : number of displacement along z axis.
+    -px      = 6.45         : pixel size along x direction in step (pixel size used only if crop coordinates are negative, default).
+    -py      = 6.45         : pixel size along y direction in step (e.g. if step is 1 um, 2.2 for Elphel or 6.45 for ImageIntense.
+    -mx      = 32           : margin width (margin used only if crop coordinates are negative, default).
+    -my      = 32           : margin height.
+    -x0      = -1           : crop x0 coordinate in pixel: left   (e.g. -x0 12 or default maximum centering).
+    -y0      = -1           : crop y0 coordinate in pixel: top    (e.g. -y0 34) range should be [0..height-1].
+    -x1      = -1           : crop x1 coordinate in pixel: right  (e.g. -x1 56).
+    -y1      = -1           : crop y1 coordinate in pixel: bottom (e.g. -y1 78).
     --wait-time = 1000         : wait time between steps in ms.
