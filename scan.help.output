@@ -1,16 +1,16 @@
 
- scan : stepper program of the Laboratory of Mechanics in Lille (LML) is intended to make translation displacement using a stepping motor, it uses different GNU libraries (see --info option)
+ scan : scan program of the Laboratory of Mechanics in Lille (LML) is intended to make translation displacement using a stepping motor and grab images for each position, it uses different GNU libraries (see --info option)
 
  usage: ./scan -h -I
-        ./scan --grab-device-path off_line -o ~/dataseb/AFDAR/cameraMTF/focus/image_x%02d_y%02d_z%02d_i%03d.jpg -n 3 -nx 1 -ny 1 -nz 11
+        ./scan --grab-device-path off_line -o image_z%02d_y%02d_x%02d_i%03d.cimg -n 3 -nx 1 -ny 1 -nz 11
  version: v0.2.5	(other library versions: RS232.v0.3.4, stepper.v0.2.0, grab.v0.1.8, data.v0.0.7)
- compilation date:  (Aug 29 2012, 15:13:22)
+ compilation date:  (Aug 29 2012, 17:18:15)
 
   * general options
     --help   = true         : help (or -h option)
     --info   = true         : show compilation options (or -I option)
 
- CImg Library 1.25, compiled Aug 29 2012 ( 15:13:22 ) with the following flags :
+ CImg Library 1.25, compiled Aug 29 2012 ( 17:18:15 ) with the following flags :
 
   > CPU endianness :         Little Endian
   > Operating System :       Unix          ('cimg_OS'=1)

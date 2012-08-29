@@ -154,8 +154,10 @@ std::string file_list;
 std::cerr<<"file=\""<<file<<"\"\n"<<std::flush;
     if(!grab.grab(image,file)) return 1;
 file_list+=" "+grab.temporary_image_name;
+/* REMOVE FORCE BAD PIXEL to 0
 std::cerr<<"WARNING: set ImagerIntense dead pixel to 0 !!\n"<<std::flush;
 image(493,763)=0;
+*/
 //image.print("image");
     if(l==0&&i==0&&j==0&&k==0)
     {//set first full image information (size, maximum position, ROI origin, ...)
@@ -172,13 +174,16 @@ image(493,763)=0;
 //image.print("cropped image");
     }//crop
     //save
+/* REMOVE SAVE crop
     image.save(file.c_str());
+*/
     //statistics
     data4scan.add_sample(image,i,j,k);
  }//done      end of grab images
   //compute mean image
 //! \todo [low] set data4scan type (factory) or add maximum and minimum variable within it
   data4scan.normalise(i,j,k);
+/* REMOVE FORCE SAVE MEAN and REMOVE TEMPORARY
 {//save mean image
 //save mean
 image_file_name(file,DataPath,i,j,k,-1);
@@ -188,7 +193,9 @@ cimg_library::CImg<unsigned short> meanAsInt(data4scan.tmp_mean);
 file+=".16bit.cimg";
 meanAsInt.save(file.c_str());
 //reset to zero (put it back in .normalise
+*/
 data4scan.tmp_mean=0.0;data4scan.tmp_count=0;
+/*
 }//save mean image
 {//remove temporary image files
 image_file_name(file,grab.temporary_image_path,-1,-1,grab.temporary_image_index,-1);
@@ -199,6 +206,7 @@ fo.close();
 std::string cmd="rm `cat "+file+"`";
 std::system(cmd.c_str());
 }//remove temporary image files
+*/
   //set flag
   data4scan.flag(i,j,k)=1;//satisfied
   return 0;
