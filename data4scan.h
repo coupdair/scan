@@ -114,7 +114,7 @@ std::cerr<<"hop(0)="<<hop(0)<<" hop(1)="<<hop(1)<<" hop(2)="<<hop(2)<<"\n"<<std:
    * \param [in] margin_x: margin for x direction for ROI regarding to maximum in first image (e.g. 16 pixel).
    * \param [in] margin_y: margin for y direction for ROI regarding to maximum in first image (e.g. 16 pixel).
   **/
-  bool initialise(const int width,const int height,const int dimX,const int dimY,const int dimZ, const int margin_x=32,const int margin_y=32)
+  bool initialise(const int width,const int height,const int dimX,const int dimY,const int dimZ, const int margin_x=32,const int margin_y=32,const int x0=-1,const int y0=-1)
   {
 std::cerr<<__FILE__<<"/"<<__func__<<"-crop_size\n"<<std::flush;
     ///scan init.
@@ -207,8 +207,11 @@ stat.print("full_image stat");
     full_image_maximum_position(0)=x;
     full_image_maximum_position(1)=y;
     ///ROI rectangle
-    ROI_origin(0)=x-margin(0);
-    ROI_origin(1)=y-margin(1);
+    if(ROI_origin(0)==-1)
+    {
+      ROI_origin(0)=x-margin(0);
+      ROI_origin(1)=y-margin(1);
+    }
   }//set_first_full_image_information
 
   //! add sample data contribution to statistics

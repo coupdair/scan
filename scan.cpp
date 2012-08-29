@@ -151,6 +151,12 @@ const int step_z=cimg_option("-sz",1,"displacement step along Z axis.");
   number(2)=number_z;
   }
   number(3)=ImageNumber;
+  ///ROI (crop)
+  const int x0=cimg_option("-x0",-1,"crop x0 coordinate: left   (e.g. -x0 15 or default maximum centering).");
+  const int y0=cimg_option("-y0",-1,"crop y0 coordinate: top    (e.g. -y0 27).");
+  const int x1=cimg_option("-x1",-1,"crop x1 coordinate: right  (e.g. -x1 63).");
+  const int y1=cimg_option("-y1",-1,"crop y1 coordinate: bottom (e.g. -y1 127).");
+
 #if cimg_display>0
   const bool do_display=cimg_option("-X",false,"activate GUI (i.e. progress display during scan mode only; set --scan true option).");
   const unsigned int zoom=cimg_option("--GUI-progress-zoom",100,"GUI progress display zoom.");
@@ -166,7 +172,7 @@ const int step_z=cimg_option("-sz",1,"displacement step along Z axis.");
   scan.initialise(StepperDeviceType,StepperDevicePath,StepperDeviceSerialType,
     StepperReaderDevicePath,StepperReaderDeviceSerialType,mechanical_jitter,
     CameraDeviceType,CameraDevicePath,ImagePath,TemporaryImagePath,
-    number);//margin);
+    number,x0,y0,x1,y1);//margin);
   //scan
   scan.scanning(number,step,velocity,wait_time,mechanical_jitter,
     ImagePath,ImageNumber,DataPath
