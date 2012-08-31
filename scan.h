@@ -153,6 +153,7 @@ std::string file_list;
     image_file_name(file,ImagePath,i,j,k,l);
 std::cerr<<"file=\""<<file<<"\"\n"<<std::flush;
     if(!grab.grab(image,file)) return 1;
+//! \todo [libGrab] _ use camera class with bad pixel taken into account
 file_list+=" "+grab.temporary_image_name;
 /* REMOVE FORCE BAD PIXEL to 0
 std::cerr<<"WARNING: set ImagerIntense dead pixel to 0 !!\n"<<std::flush;
@@ -164,7 +165,7 @@ image(493,763)=0;
       data4scan.set_first_full_image_information(image);
     }//first full image
 //data4scan.print_all("data4scan");
-//! \todo [high] . set crop value from data4scan width and height (i.e. make a crop_sample function AND call it here)
+//! \todo [high] _ set crop value from data4scan width and height (i.e. make a crop_sample function AND call it here)
     {//crop
     const int x0=data4scan.ROI_origin(0);
     const int y0=data4scan.ROI_origin(1);
@@ -174,6 +175,7 @@ image(493,763)=0;
 //image.print("cropped image");
     }//crop
     //save
+//! \todo [libGrab] _ use camera class for saving (i.e. grab.save_image(file.c_str(),image) ; e.g. need for fake=load_image_file)
 /* REMOVE SAVE crop
     image.save(file.c_str());
 */
@@ -183,6 +185,7 @@ image(493,763)=0;
   //compute mean image
 //! \todo [low] set data4scan type (factory) or add maximum and minimum variable within it
   data4scan.normalise(i,j,k);
+//! \todo [low] _ vector for saving many formats e.g. cimg, NetCDF.
 /* REMOVE FORCE SAVE MEAN and REMOVE TEMPORARY
 {//save mean image
 //save mean
@@ -197,6 +200,7 @@ meanAsInt.save(file.c_str());
 data4scan.tmp_mean=0.0;data4scan.tmp_count=0;
 /*
 }//save mean image
+//! \todo [libGrab] _ add function to remove temporary image file in grab class
 {//remove temporary image files
 image_file_name(file,grab.temporary_image_path,-1,-1,grab.temporary_image_index,-1);
 file+=".remove.txt";
