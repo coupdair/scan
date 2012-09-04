@@ -111,6 +111,7 @@ version: "+std::string(VERSION)+"\t(other library versions: RS232."+std::string(
   ///image
   const int ImageNumber=cimg_option("-n",10,"number of images to acquire.");
   const std::string ImagePath=cimg_option("-o","./image_x%02d_y%02d_z%02d_i%03d.jpg","path for image(s).");
+  const bool outputOrder=cimg_option("--xyzi-order",false,"output file name order could be xyzi (default is zyxi ordered).");
   const std::string TemporaryImagePath=cimg_option("-t","image_%05d.imx","temporary path for image(s) (i.e. image_%05d.imx e.g. image_000001.imx).");
   const std::string  DataPath=cimg_option("-O","./meanFlagNFail.cimg","path for extracted data file (i.e. mean images, flag and fail).");
  ///device stepper
@@ -195,7 +196,7 @@ version: "+std::string(VERSION)+"\t(other library versions: RS232."+std::string(
   scan.initialise(StepperDeviceType,StepperDevicePath,StepperDeviceSerialType,
     StepperReaderDevicePath,StepperReaderDeviceSerialType,mechanical_jitter,
     CameraDeviceType,CameraDevicePath,ImagePath,TemporaryImagePath,
-    number,margin,pixel_size,x0,y0,x1,y1);
+    number,margin,pixel_size,x0,y0,x1,y1,outputOrder);
   //scan
   scan.scanning(number,step,velocity,wait_time,mechanical_jitter,
     ImagePath,ImageNumber,DataPath

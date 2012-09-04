@@ -3,14 +3,14 @@
 
  usage: ./scan -h -I
         ./scan --grab-device-path off_line -o image_z%02d_y%02d_x%02d_i%03d.cimg -n 3 -nx 1 -ny 1 -nz 11
- version: v0.2.5	(other library versions: RS232.v0.3.4, stepper.v0.2.0, grab.v0.1.8, data.v0.0.7)
- compilation date:  (Aug 31 2012, 16:00:14)
+ version: v0.2.6	(other library versions: RS232.v0.3.4, stepper.v0.2.0, grab.v0.1.9, data.v0.0.7)
+ compilation date:  (Sep  4 2012, 17:33:33)
 
   * general options
     --help   = true         : help (or -h option)
     --info   = true         : show compilation options (or -I option)
 
- CImg Library 1.25, compiled Aug 31 2012 ( 16:00:14 ) with the following flags :
+ CImg Library 1.25, compiled Sep  4 2012 ( 17:33:33 ) with the following flags :
 
   > CPU endianness :         Little Endian
   > Operating System :       Unix          ('cimg_OS'=1)
@@ -35,6 +35,7 @@
     --grab-device-path = 192.168.0.9  : path of grab device.
     -n       = 10           : number of images to acquire.
     -o       = ./image_x%02d_y%02d_z%02d_i%03d.jpg : path for image(s).
+    --xyzi-order = false        : output file name order could be xyzi (default is zyxi ordered).
     -t       = image_%05d.imx : temporary path for image(s) (i.e. image_%05d.imx e.g. image_000001.imx).
     -O       = ./meanFlagNFail.cimg : path for extracted data file (i.e. mean images, flag and fail).
   * stepper device (e.g. translation stage) options

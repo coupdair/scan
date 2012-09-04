@@ -28,6 +28,7 @@ public:
 //private:
   //! grab device
   Cgrab *pGrab;
+  bool file_path_order_xyzi;
   //! stepper device
   Cstepper *pStepper;
 public:
@@ -65,12 +66,13 @@ bool initialise(const std::string &StepperDeviceType,const std::string &StepperD
   const cimg_library::CImg<int> &number,
   const cimg_library::CImg<int> &margin_pixel,
   const cimg_library::CImg<float> &pixel_size,
-  const int x0,const int y0,const int x1,const int y1)
+  const int x0,const int y0,const int x1,const int y1,bool is_file_path_order_xyzi=false)
 {
   ///grab device object
   Cgrab_factory grab_factory;
   pGrab=grab_factory.create(CameraDeviceType);
   pGrab->temporary_image_path=TemporaryImagePath;
+  file_path_order_xyzi=is_file_path_order_xyzi;
   //open
   if(!pGrab->open(CameraDevicePath)) return false;
   //get
@@ -124,8 +126,10 @@ std::cerr<<"Information: cropped image (i.e. ROI) size is set by ROI rectangle c
 bool image_file_name(std::string &file_name,const std::string &file_path_format, int i,int j,int k,int l)
 {
   char fileAsCA[512];
-//  std::sprintf((char*)fileAsCA/*.c_str()*/,file_path_format.c_str(),i,j,k,l);//e.g. file_path_format="./img_x%02d_y%02d_z%02d_i%03d.png"
-  std::sprintf((char*)fileAsCA/*.c_str()*/,file_path_format.c_str(),k,j,i,l);//e.g. file_path_format="./img_z%02d_y%02d_x%02d_i%03d.png"
+  if(file_path_order_xyzi)
+    std::sprintf((char*)fileAsCA/*.c_str()*/,file_path_format.c_str(),i,j,k,l);//e.g. file_path_format="./img_x%02d_y%02d_z%02d_i%03d.png"
+  else
+    std::sprintf((char*)fileAsCA/*.c_str()*/,file_path_format.c_str(),k,j,i,l);//e.g. file_path_format="./img_z%02d_y%02d_x%02d_i%03d.png"
   file_name=fileAsCA;
   return true;
 }//image_file_name
@@ -175,10 +179,8 @@ image(493,763)=0;
 //image.print("cropped image");
     }//crop
     //save
-//! \todo [libGrab] _ use camera class for saving (i.e. grab.save_image(file.c_str(),image) ; e.g. need for fake=load_image_file)
-/* REMOVE SAVE crop
-    image.save(file.c_str());
-*/
+//! \todo [libGrab v0.1.9] . use camera class for saving (i.e. grab.save(image,file) ; e.g. need for fake=load_image_file )
+    grab.save(image,file);
     //statistics
     data4scan.add_sample(image,i,j,k);
  }//done      end of grab images
