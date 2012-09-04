@@ -75,11 +75,11 @@ bool initialise(const std::string &StepperDeviceType,const std::string &StepperD
   file_path_order_xyzi=is_file_path_order_xyzi;
   //open
   if(!pGrab->open(CameraDevicePath)) return false;
-  //get
-//! \todo [low] remove get first image that is no need as Cdata4scan::set_first_full_image_information will be called for first image only.
-  {//[remove]
-  cimg_library::CImg<int> image;
+  //get full image size
+  int width=-1,height=-1;
+//! \todo [low] remove get first image that is no need as Cdata4scan::set_first_full_image_information will be called for first image only (warning: for default grab/load image flag: need to create specific load_from_file class that is not base class)
   {//grab a first image (presently a sequence)
+  cimg_library::CImg<int> image;
   std::string file;
   this->image_file_name(file,ImagePath,0,0,0,0);
 //! \todo v record full sequence (to have compatibility with AandDEE reset)
@@ -89,8 +89,12 @@ bool initialise(const std::string &StepperDeviceType,const std::string &StepperD
     if(!pGrab->grab(image,file)) return false;
 image.print("initialise/image for size");
   }
+#if version_cimg < 130
+  width=image.width;  height=image.height;
+#else
+  width=image.width();height=image.height();
+#endif
   }//grab a first image
-  }//[remove]
 
   ///stepper device object
   //! \todo [high] . need stepper factory
@@ -103,8 +107,16 @@ cimg_library::cimg::wait(1234);
   ///data object (cropped image)
   if(x0<0||y0<0||x1<0||y1<0)
   {
+    if(pGrab->grabed_image)
+    {
 std::cerr<<"Information: cropped image (i.e. ROI) size is set from margin and pixel size (and scan parameters too).\n"<<std::flush;
-    data4scan.initialisef(margin_pixel,pixel_size,number(0),number(1),number(2));
+      data4scan.initialisef(margin_pixel,pixel_size,number(0),number(1),number(2));
+    }
+    else
+    {
+std::cerr<<"Information: cropped image (i.e. ROI) size is set by loaded image size (i.e. no crop).\n"<<std::flush;
+      data4scan.initialise(width,height,number(0),number(1),number(2),0,0,0,0);
+    }
   }
   else
   {

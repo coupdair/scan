@@ -1,7 +1,7 @@
 PROGRAMS = version lavision scan  
 DOCUMENTATIONS = doc
 
-version = v0.2.6
+version = v0.2.7
 version_cimg = 125
 #version_cimg = 149
 version_scan=${version}

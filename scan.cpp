@@ -95,7 +95,8 @@ int main(int argc, char *argv[])
   cimg_usage(std::string("scan program of the Laboratory of Mechanics in Lille (LML) is intended to make translation displacement using a stepping motor and grab images for each position, \
 it uses different GNU libraries (see --info option)\n\n \
 usage: ./scan -h -I\n \
-       ./scan --grab-device-path off_line -o image_z%02d_y%02d_x%02d_i%03d.cimg -n 3 -nx 1 -ny 1 -nz 11\n \
+       ./scan --stepper-device-type fake --grab-device-type grab_image_file -o image_z%02d_y%02d_x%02d_i%03d.cimg -n 3 -nx 1 -ny 1 -nz 11\n \
+       ./scan --stepper-device-type fake --grab-device-type grab_image_file -o image_x%02d_y%02d_z%02d_i%03d.cimg --output-xyzi true -n 3 -nx 1 -ny 1 -nz 11\n \
 version: "+std::string(VERSION)+"\t(other library versions: RS232."+std::string(RS232_VERSION)+", stepper."+std::string(STEPPER_VERSION)+", grab."+std::string(GRAB_VERSION)+", data."+std::string(DATA_VERSION)+")\n compilation date: " \
             ).c_str());//cimg_usage
  ///information and help
