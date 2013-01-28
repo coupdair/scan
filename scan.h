@@ -557,6 +557,7 @@ int scanning_force(Cstepper &stepper,const cimg_library::CImg<int> &number,const
     if(number(2)>1)
     {//Z move only if more than one slice to do
       if(!stepper.move(pos,velocity)) return 1;
+      data4scan.fail(0,0,k)+=stepper.fail;
     }//Z move
 ///** wait a while for user
     cimg_library::cimg::wait(wait_time);
@@ -574,6 +575,7 @@ int scanning_force(Cstepper &stepper,const cimg_library::CImg<int> &number,const
       if(number(1)>1)
       {//Y move only if more than one column to do
         if(!stepper.move(pos,velocity)) return 1;
+        data4scan.fail(0,j,k)+=stepper.fail;
 //        if(!stepper.move(1,jy,velocity)) return 1;
       }//Y move
 ///*** wait a while for user
@@ -599,7 +601,8 @@ int scanning_force(Cstepper &stepper,const cimg_library::CImg<int> &number,const
         //force move along X axis
         if(number(0)>1)
         {//X move only if more than one line to do
-        if(!stepper.move(pos,velocity)) return 1;
+          if(!stepper.move(pos,velocity)) return 1;
+          data4scan.fail(i,j,k)+=stepper.fail;
 //        if(!stepper.move(0,ix,velocity)) return 1;
         }//X move
 ///**** wait a while for user
@@ -634,6 +637,7 @@ int scanning_force(Cstepper &stepper,const cimg_library::CImg<int> &number,const
         // 1n2. move with mechanical jitter
         cimg_library::CImg<int> reset_x(3);reset_x(0)=0;reset_x(1)=jy;reset_x(2)=kz;//e.g. (0,2,1)
         if(!stepper.move(reset_x,velocity)) return 1;
+        data4scan.fail(0,j,k)+=stepper.fail;
         cimg_library::cimg::wait(wait_time);
       }//X reset
     }//Y axis loop
@@ -655,6 +659,7 @@ std::cerr<<"WARNING: reset in Y direction is limited for safety in physical spac
       // 1n2. move with mechanical jitter
       cimg_library::CImg<int> reset_y(3);reset_y(0)=0;reset_y(1)=0;reset_y(2)=kz;//e.g. (0,0,1)
       if(!stepper.move(reset_y,velocity)) return 1;
+      data4scan.fail(0,0,k)+=stepper.fail;
       cimg_library::cimg::wait(wait_time);
     }//Y reset
   }//Z axis loop
