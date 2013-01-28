@@ -5,14 +5,14 @@
         ./scan --stepper-device-type fake --grab-device-type grab_image_file -o image_z%02d_y%02d_x%02d_i%03d.cimg -n 3 -nx 1 -ny 1 -nz 11
         ./scan --stepper-device-type fake --grab-device-type grab_image_file -o image_x%02d_y%02d_z%02d_i%03d.cimg --output-xyzi true -n 3 -nx 1 -ny 1 -nz 11
         ./scan -o ./scan/image_z%02d_y%02d_x%02d_i%04d.cimg -t ./image/B%05d.im7 --grab-device-type grab_AandDEE_serial --grab-device-path /dev/ttyACM0 -X false -n 100 -nx 50 -ny 50 -O ./mean/image_z%02d_y%02d_x%02d.mean.cimg --stepper-device-type uControlXYZnReader --stepper-device-path=/dev/ttyUSB0 -sx 1 -sy 1
- version: v0.2.8	(other library versions: RS232.v0.3.4, stepper.v0.2.0, grab.v0.2.0, data.v0.0.7)
- compilation date:  (Sep  5 2012, 13:32:26)
+ version: v0.2.8	(other library versions: RS232.v0.3.4, stepper.v0.2.1, grab.v0.2.0, data.v0.0.7)
+ compilation date:  (Jan 28 2013, 15:34:53)
 
   * general options
     --help   = true         : help (or -h option)
     --info   = true         : show compilation options (or -I option)
 
- CImg Library 1.25, compiled Sep  5 2012 ( 13:32:26 ) with the following flags :
+ CImg Library 1.25, compiled Jan 28 2013 ( 15:34:53 ) with the following flags :
 
   > CPU endianness :         Little Endian
   > Operating System :       Unix          ('cimg_OS'=1)
